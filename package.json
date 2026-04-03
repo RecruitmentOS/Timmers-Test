@@ -1,0 +1,14 @@
+{
+  "name": "@recruitment-os/root",
+  "private": true,
+  "scripts": {
+    "dev": "turbo dev",
+    "build": "turbo build",
+    "type-check": "turbo type-check",
+    "lint": "turbo lint"
+  },
+  "devDependencies": {
+    "turborepo": "^0.0.1",
+    "typescript": "^5.9.3"
+  }
+}

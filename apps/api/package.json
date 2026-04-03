@@ -1,0 +1,33 @@
+{
+  "name": "@recruitment-os/api",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc",
+    "type-check": "tsc --noEmit",
+    "db:push": "drizzle-kit push",
+    "db:generate": "drizzle-kit generate",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "hono": "^4",
+    "@hono/node-server": "^1",
+    "better-auth": "^1.5",
+    "drizzle-orm": "^0.45",
+    "postgres": "^3",
+    "@aws-sdk/client-s3": "^3",
+    "@aws-sdk/s3-request-presigner": "^3",
+    "zod": "^4",
+    "dotenv": "^16",
+    "@recruitment-os/types": "workspace:*",
+    "@recruitment-os/permissions": "workspace:*"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.31",
+    "typescript": "^5.7",
+    "tsx": "^4",
+    "@types/node": "^22"
+  }
+}
