@@ -1,2 +1,3 @@
-// Placeholder - permissions will be added in Plan 02
-export {};
+export * from "./roles.js";
+export * from "./resources.js";
+export * from "./matrix.js";
