@@ -9,25 +9,27 @@
     "type-check": "tsc --noEmit",
     "db:push": "drizzle-kit push && psql $DATABASE_URL -f src/db/setup-rls.sql",
     "db:generate": "drizzle-kit generate",
-    "db:studio": "drizzle-kit studio"
+    "db:studio": "drizzle-kit studio",
+    "db:seed": "tsx src/db/seed/index.ts"
   },
   "dependencies": {
-    "hono": "^4",
-    "@hono/node-server": "^1",
-    "better-auth": "^1.5",
-    "drizzle-orm": "^0.45",
-    "postgres": "^3",
     "@aws-sdk/client-s3": "^3",
     "@aws-sdk/s3-request-presigner": "^3",
-    "zod": "^4",
-    "dotenv": "^16",
+    "@hono/node-server": "^1",
+    "@hono/zod-validator": "^0.7.6",
+    "@recruitment-os/permissions": "workspace:*",
     "@recruitment-os/types": "workspace:*",
-    "@recruitment-os/permissions": "workspace:*"
+    "better-auth": "^1.5",
+    "dotenv": "^16",
+    "drizzle-orm": "^0.45",
+    "hono": "^4",
+    "postgres": "^3",
+    "zod": "^4"
   },
   "devDependencies": {
+    "@types/node": "^22",
     "drizzle-kit": "^0.31",
-    "typescript": "^5.7",
     "tsx": "^4",
-    "@types/node": "^22"
+    "typescript": "^5.7"
   }
 }

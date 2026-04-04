@@ -5,14 +5,13 @@ import { serve } from "@hono/node-server";
 import { auth } from "./auth.js";
 import { authMiddleware } from "./middleware/auth.middleware.js";
 import { tenantMiddleware } from "./middleware/tenant.middleware.js";
-
-type AppEnv = {
-  Variables: {
-    user: typeof auth.$Infer.Session.user | null;
-    session: typeof auth.$Infer.Session.session | null;
-    organizationId: string;
-  };
-};
+import { vacancyRoutes } from "./routes/vacancy.routes.js";
+import { candidateRoutes } from "./routes/candidate.routes.js";
+import { applicationRoutes } from "./routes/application.routes.js";
+import { clientRoutes } from "./routes/client.routes.js";
+import { fileRoutes } from "./routes/file.routes.js";
+import { adminRoutes } from "./routes/admin.routes.js";
+import type { AppEnv } from "./lib/app-env.js";
 
 const app = new Hono<AppEnv>();
 
@@ -49,6 +48,14 @@ app.use("/api/*", async (c, next) => {
   }
   return tenantMiddleware(c, next);
 });
+
+// Mount domain routes
+app.route("/api/vacancies", vacancyRoutes);
+app.route("/api/candidates", candidateRoutes);
+app.route("/api/applications", applicationRoutes);
+app.route("/api/clients", clientRoutes);
+app.route("/api/files", fileRoutes);
+app.route("/api/admin", adminRoutes);
 
 serve({ fetch: app.fetch, port: 4000 }, (info) => {
   console.log(`API server running on http://localhost:${info.port}`);
