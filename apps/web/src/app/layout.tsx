@@ -1,6 +1,7 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { cn } from "@/lib/utils";
 import { QueryProvider } from "@/lib/query-client";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -21,9 +22,11 @@ export default function RootLayout({
   return (
     <html lang="en" className={cn("font-sans antialiased", inter.variable)}>
       <body>
-        <QueryProvider>
-          <TooltipProvider>{children}</TooltipProvider>
-        </QueryProvider>
+        <NuqsAdapter>
+          <QueryProvider>
+            <TooltipProvider>{children}</TooltipProvider>
+          </QueryProvider>
+        </NuqsAdapter>
       </body>
     </html>
   );

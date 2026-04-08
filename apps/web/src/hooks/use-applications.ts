@@ -2,7 +2,48 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
-import type { CandidateApplication, CreateApplicationInput } from "@recruitment-os/types";
+import type {
+  CandidateApplication,
+  CandidateApplicationListResponse,
+  CreateApplicationInput,
+} from "@recruitment-os/types";
+
+/**
+ * Paginated listing of applications with server-side filters.
+ *
+ * Reads the Plan 02-02 envelope `{ rows, total, pages, page, limit }`
+ * from GET /api/applications. The `total` field powers the
+ * SelectAllMatchingBanner in Plan 02-04 (bulk-by-filter UI).
+ *
+ * Consumers read `data?.rows` for the current page and `data?.total`
+ * for the full filtered count.
+ */
+export type UseApplicationsFilters = {
+  vacancyId?: string;
+  stageId?: string;
+  ownerId?: string;
+  source?: string;
+  qualificationStatus?: "pending" | "yes" | "maybe" | "no";
+  page?: number;
+  limit?: number;
+};
+
+export function useApplications(filters: UseApplicationsFilters = {}) {
+  const qs = new URLSearchParams();
+  for (const [k, v] of Object.entries(filters)) {
+    if (v !== undefined && v !== null && v !== "") {
+      qs.set(k, String(v));
+    }
+  }
+  const qsString = qs.toString();
+  return useQuery<CandidateApplicationListResponse>({
+    queryKey: ["applications", filters],
+    queryFn: () =>
+      apiClient<CandidateApplicationListResponse>(
+        `/api/applications${qsString ? `?${qsString}` : ""}`
+      ),
+  });
+}
 
 export function useCreateApplication() {
   const qc = useQueryClient();
@@ -19,6 +60,10 @@ export function useCreateApplication() {
   });
 }
 
+/**
+ * Legacy stage-move mutation — kept for list-view callers. The pipeline
+ * board uses the optimistic variant in `@/hooks/use-pipeline`.
+ */
 export function useMoveStage() {
   const qc = useQueryClient();
   return useMutation({
@@ -30,6 +75,8 @@ export function useMoveStage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["vacancy-applications"] });
       qc.invalidateQueries({ queryKey: ["candidate-applications"] });
+      qc.invalidateQueries({ queryKey: ["applications"] });
+      qc.invalidateQueries({ queryKey: ["pipeline"] });
     },
   });
 }

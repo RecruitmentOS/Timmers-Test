@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
 import { MapPin, Calendar, UserPlus } from "lucide-react";
+import { PipelineBoard } from "@/components/pipeline/pipeline-board";
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-gray-100 text-gray-800",
@@ -212,14 +213,7 @@ export default function VacancyDetailPage() {
             <TabsTrigger value="candidates">Candidates</TabsTrigger>
             <TabsTrigger value="notes">Notes</TabsTrigger>
             <TabsTrigger value="details">Details</TabsTrigger>
-            <Tooltip>
-              <TooltipTrigger render={<span />}>
-                <TabsTrigger value="pipeline" disabled>
-                  Pipeline
-                </TabsTrigger>
-              </TooltipTrigger>
-              <TooltipContent>Coming in Phase 2</TooltipContent>
-            </Tooltip>
+            <TabsTrigger value="pipeline">Pipeline</TabsTrigger>
             <Tooltip>
               <TooltipTrigger render={<span />}>
                 <TabsTrigger value="tasks" disabled>
@@ -341,6 +335,24 @@ export default function VacancyDetailPage() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="pipeline" className="mt-4">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm text-muted-foreground">
+                Compact pipeline summary. Open the full board for
+                drag-and-drop.
+              </p>
+              <Link
+                href={`/vacancies/${id}/pipeline`}
+                className="text-sm font-medium text-slate-900 underline"
+              >
+                Open full board →
+              </Link>
+            </div>
+            <div className="border border-slate-200 rounded">
+              <PipelineBoard vacancyId={id} compact />
+            </div>
           </TabsContent>
         </Tabs>
       </TooltipProvider>
