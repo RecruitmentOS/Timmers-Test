@@ -1,93 +1,40 @@
 "use client";
 
-import { useVacancies } from "@/hooks/use-vacancies";
-import { useCandidates } from "@/hooks/use-candidates";
-import { useClients } from "@/hooks/use-clients";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Briefcase, Users, Building2, TrendingUp } from "lucide-react";
+import { WidgetOpenVacancies } from "@/components/dashboard/widget-open-vacancies";
+import { WidgetNewCandidates } from "@/components/dashboard/widget-new-candidates";
+import { WidgetOverdueFollowups } from "@/components/dashboard/widget-overdue-followups";
+import { WidgetQualifiedThisWeek } from "@/components/dashboard/widget-qualified-this-week";
+import { WidgetOpenTasks } from "@/components/dashboard/widget-open-tasks";
+import { WidgetSourceSnapshot } from "@/components/dashboard/widget-source-snapshot";
+
+/**
+ * Dashboard page
+ *
+ * Grid of six independent widgets. Each widget owns its own data fetch
+ * (via its own hook in use-dashboard.ts) and its own loading / error
+ * state — the page itself does not read `session.role` or branch on
+ * role, because the backend services in Plan 02-02 already scope
+ * results by role on the server. The frontend just renders what it
+ * gets.
+ */
 
 export default function DashboardPage() {
-  const { data: vacancies, isLoading: loadingVac } = useVacancies();
-  const { data: activeVacancies, isLoading: loadingActive } = useVacancies({
-    status: "active",
-  });
-  const { data: candidates, isLoading: loadingCand } = useCandidates();
-  const { data: clients, isLoading: loadingClients } = useClients();
-
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-semibold">Dashboard</h1>
-      <p className="text-muted-foreground">
-        Welcome to Recruitment OS. Here is an overview of your data.
-      </p>
+      <div>
+        <h1 className="text-2xl font-semibold">Dashboard</h1>
+        <p className="text-sm text-muted-foreground">
+          Overzicht van vandaag — vacatures, kandidaten en taken in één blik.
+        </p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Vacancies
-            </CardTitle>
-            <Briefcase className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {loadingVac ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <p className="text-3xl font-bold">{vacancies?.length ?? 0}</p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Active Vacancies
-            </CardTitle>
-            <TrendingUp className="h-4 w-4 text-green-500" />
-          </CardHeader>
-          <CardContent>
-            {loadingActive ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <p className="text-3xl font-bold text-green-600">
-                {activeVacancies?.length ?? 0}
-              </p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Total Candidates
-            </CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {loadingCand ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <p className="text-3xl font-bold">{candidates?.length ?? 0}</p>
-            )}
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">
-              Clients
-            </CardTitle>
-            <Building2 className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            {loadingClients ? (
-              <Skeleton className="h-8 w-16" />
-            ) : (
-              <p className="text-3xl font-bold">{clients?.length ?? 0}</p>
-            )}
-          </CardContent>
-        </Card>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <WidgetOpenVacancies />
+        <WidgetNewCandidates />
+        <WidgetOverdueFollowups />
+        <WidgetQualifiedThisWeek />
+        <WidgetOpenTasks />
+        <WidgetSourceSnapshot />
       </div>
     </div>
   );
