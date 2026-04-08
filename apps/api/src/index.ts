@@ -8,6 +8,7 @@ import { tenantMiddleware } from "./middleware/tenant.middleware.js";
 import { vacancyRoutes } from "./routes/vacancy.routes.js";
 import { candidateRoutes } from "./routes/candidate.routes.js";
 import { applicationRoutes } from "./routes/application.routes.js";
+import { pipelineRoutes } from "./routes/pipeline.routes.js";
 import { clientRoutes } from "./routes/client.routes.js";
 import { fileRoutes } from "./routes/file.routes.js";
 import { adminRoutes } from "./routes/admin.routes.js";
@@ -55,6 +56,7 @@ app.use("/api/*", async (c, next) => {
 app.route("/api/vacancies", vacancyRoutes);
 app.route("/api/candidates", candidateRoutes);
 app.route("/api/applications", applicationRoutes);
+app.route("/api/pipeline", pipelineRoutes);
 app.route("/api/clients", clientRoutes);
 app.route("/api/files", fileRoutes);
 app.route("/api/admin", adminRoutes);
