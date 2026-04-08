@@ -39,6 +39,7 @@ const FULL_NAV: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
   { label: "Vacancies", href: "/vacancies", icon: Briefcase },
   { label: "Candidates", href: "/candidates", icon: Users },
+  { label: "Taken", href: "/tasks", icon: ListChecks },
   { label: "Clients", href: "/clients", icon: Building2 },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
