@@ -5,3 +5,8 @@ dist
 .env.local
 *.tsbuildinfo
 .turbo
+
+# Playwright
+test-results
+playwright-report
+playwright/.cache
