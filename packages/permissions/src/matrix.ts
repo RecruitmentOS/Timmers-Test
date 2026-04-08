@@ -10,6 +10,9 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
     application: ["create", "read", "update", "delete", "move"],
     client: ["create", "read", "update", "delete"],
     task: ["create", "read", "update", "delete"],
+    tag: ["create", "read", "delete"],
+    dashboard: ["read"],
+    bulk: ["execute"],
     report: ["read"],
     settings: ["read", "update"],
     user: ["create", "read", "update", "delete", "invite"],
@@ -20,6 +23,9 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
     application: ["create", "read", "update", "delete", "move"],
     client: ["create", "read", "update", "delete"],
     task: ["create", "read", "update", "delete"],
+    tag: ["create", "read", "delete"],
+    dashboard: ["read"],
+    bulk: ["execute"],
     report: ["read"],
     settings: ["read", "update"],
     user: ["create", "read", "update", "delete", "invite"],
@@ -30,6 +36,9 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
     application: ["create", "read", "update", "move"],
     client: ["read"],
     task: ["create", "read", "update"],
+    tag: ["create", "read", "delete"],
+    dashboard: ["read"],
+    bulk: ["execute"],
     report: ["read"],
   },
   agent: {
@@ -37,11 +46,14 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
     candidate: ["create", "read", "update"],
     application: ["create", "read", "update", "move"],
     task: ["create", "read", "update"],
+    tag: ["read"],
+    dashboard: ["read"],
   },
   hiring_manager: {
     vacancy: ["read"],
     candidate: ["read"],
     application: ["read"],
+    dashboard: ["read"],
     report: ["read"],
   },
   client_viewer: {
@@ -50,6 +62,7 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
   },
   marketing_op: {
     vacancy: ["read"],
+    dashboard: ["read"],
     report: ["read"],
   },
 };

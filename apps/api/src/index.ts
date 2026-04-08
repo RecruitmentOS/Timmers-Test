@@ -12,6 +12,8 @@ import { clientRoutes } from "./routes/client.routes.js";
 import { fileRoutes } from "./routes/file.routes.js";
 import { adminRoutes } from "./routes/admin.routes.js";
 import type { AppEnv } from "./lib/app-env.js";
+import { startJobQueue } from "./lib/job-queue.js";
+import { registerJobHandlers } from "./jobs/job-handlers.js";
 
 const app = new Hono<AppEnv>();
 
@@ -19,7 +21,7 @@ const app = new Hono<AppEnv>();
 app.use(
   "*",
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3000",
+    origin: process.env.FRONTEND_URL || "http://localhost:3002",
     credentials: true,
   })
 );
@@ -56,6 +58,11 @@ app.route("/api/applications", applicationRoutes);
 app.route("/api/clients", clientRoutes);
 app.route("/api/files", fileRoutes);
 app.route("/api/admin", adminRoutes);
+
+// Boot pg-boss job queue + register handlers before listening.
+// Gated by JOBS_ENABLED env var so dev can opt out.
+await startJobQueue();
+await registerJobHandlers();
 
 serve({ fetch: app.fetch, port: 4000 }, (info) => {
   console.log(`API server running on http://localhost:${info.port}`);

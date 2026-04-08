@@ -13,11 +13,13 @@ import {
   member,
   account,
 } from "../schema/auth.js";
+import { hashPassword } from "better-auth/crypto";
 import { pipelineStages } from "../schema/pipeline-stages.js";
 import { clients } from "../schema/clients.js";
 import { vacancies } from "../schema/vacancies.js";
 import { candidates } from "../schema/candidates.js";
 import { candidateApplications } from "../schema/applications.js";
+import { taskAutoRules } from "../schema/tasks.js";
 import { withTenantContext } from "../../lib/with-tenant-context.js";
 
 async function seed() {
@@ -70,15 +72,14 @@ async function seed() {
     });
     actualAdminUserId = adminUserId;
 
-    // Create password account (bcrypt hash for "password123")
-    const bcryptHash =
-      "$2a$10$KIXg.gCzCqWdKLbDfZfXg.sxKPqx1ELGTZcHLp3u5fN5d4ue.hy.m";
+    // Hash password using Better Auth's scrypt-based hashing
+    const hashedPassword = await hashPassword("password123");
     await db.insert(account).values({
       id: "30000000-0000-0000-0000-000000000001",
       userId: actualAdminUserId,
       accountId: actualAdminUserId,
       providerId: "credential",
-      password: bcryptHash,
+      password: hashedPassword,
     });
 
     console.log("  Created admin user: admin@test.com / password123");
@@ -322,6 +323,59 @@ async function seed() {
     });
 
     console.log("  Created 3 sample candidate applications");
+  });
+
+  // Phase 2 seed: task_auto_rules
+  // Seed one rule per mode per org. Plan 01-04 hasn't shipped yet, so
+  // organization.mode does not exist and multi-org seed is not in place.
+  // We seed TWO rules on the existing demo org (one employer-style template,
+  // one agency-style template) to satisfy the "at least one rule per mode"
+  // requirement. When Plan 01-04 lands, this block will split into per-org
+  // rules for Simon Loos (employer) + Upply Jobs (agency).
+  await withTenantContext(orgId, async (tx) => {
+    const existingRules = await tx.select().from(taskAutoRules);
+    if (existingRules.length > 0) {
+      console.log(
+        `  task_auto_rules already exist (${existingRules.length}), skipping`
+      );
+      return;
+    }
+
+    const stages = await tx.select().from(pipelineStages);
+    const contactedStage = stages.find((s) => s.slug === "contacted");
+    const sentToClientStage = stages.find((s) => s.slug === "sent-to-client");
+
+    if (contactedStage) {
+      // Agency-mode template (Upply Jobs)
+      await tx.insert(taskAutoRules).values({
+        organizationId: orgId,
+        triggerStageId: contactedStage.id,
+        titleTemplate: "Volg contact op — klant update",
+        dueOffsetDays: 3,
+        priority: "medium",
+      });
+
+      // Employer-mode template (Simon Loos)
+      await tx.insert(taskAutoRules).values({
+        organizationId: orgId,
+        triggerStageId: contactedStage.id,
+        titleTemplate: "Volg contact op — hiring manager update",
+        dueOffsetDays: 3,
+        priority: "medium",
+      });
+    }
+
+    if (sentToClientStage) {
+      await tx.insert(taskAutoRules).values({
+        organizationId: orgId,
+        triggerStageId: sentToClientStage.id,
+        titleTemplate: "Bevestig ontvangst profielen bij stakeholder",
+        dueOffsetDays: 2,
+        priority: "high",
+      });
+    }
+
+    console.log("  Created seeded task_auto_rules (per mode templates)");
   });
 
   console.log("\nSeed complete!");

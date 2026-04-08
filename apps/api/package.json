@@ -23,6 +23,7 @@
     "dotenv": "^16",
     "drizzle-orm": "^0.45",
     "hono": "^4",
+    "pg-boss": "^12.15.0",
     "postgres": "^3",
     "zod": "^4"
   },

@@ -6,12 +6,16 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./db/index.js";
 
 // Define permission statements matching the resources
+// MUST stay in lockstep with packages/permissions/src/resources.ts
 const statements = {
   vacancy: ["create", "read", "update", "delete"],
   candidate: ["create", "read", "update", "delete"],
   application: ["create", "read", "update", "delete", "move"],
   client: ["create", "read", "update", "delete"],
   task: ["create", "read", "update", "delete"],
+  tag: ["create", "read", "delete"],
+  dashboard: ["read"],
+  bulk: ["execute"],
   report: ["read"],
   settings: ["read", "update"],
   user: ["create", "read", "update", "delete", "invite"],
@@ -26,6 +30,9 @@ const superAdmin = ac.newRole({
   application: ["create", "read", "update", "delete", "move"],
   client: ["create", "read", "update", "delete"],
   task: ["create", "read", "update", "delete"],
+  tag: ["create", "read", "delete"],
+  dashboard: ["read"],
+  bulk: ["execute"],
   report: ["read"],
   settings: ["read", "update"],
   user: ["create", "read", "update", "delete", "invite"],
@@ -37,6 +44,9 @@ const agencyAdmin = ac.newRole({
   application: ["create", "read", "update", "delete", "move"],
   client: ["create", "read", "update", "delete"],
   task: ["create", "read", "update", "delete"],
+  tag: ["create", "read", "delete"],
+  dashboard: ["read"],
+  bulk: ["execute"],
   report: ["read"],
   settings: ["read", "update"],
   user: ["create", "read", "update", "delete", "invite"],
@@ -48,6 +58,9 @@ const recruiter = ac.newRole({
   application: ["create", "read", "update", "move"],
   client: ["read"],
   task: ["create", "read", "update"],
+  tag: ["create", "read", "delete"],
+  dashboard: ["read"],
+  bulk: ["execute"],
   report: ["read"],
 });
 
@@ -56,12 +69,15 @@ const agent = ac.newRole({
   candidate: ["create", "read", "update"],
   application: ["create", "read", "update", "move"],
   task: ["create", "read", "update"],
+  tag: ["read"],
+  dashboard: ["read"],
 });
 
 const hiringManager = ac.newRole({
   vacancy: ["read"],
   candidate: ["read"],
   application: ["read"],
+  dashboard: ["read"],
   report: ["read"],
 });
 
@@ -72,12 +88,14 @@ const clientViewer = ac.newRole({
 
 const marketingOp = ac.newRole({
   vacancy: ["read"],
+  dashboard: ["read"],
   report: ["read"],
 });
 
 export const auth = betterAuth({
   baseURL: process.env.BETTER_AUTH_URL || "http://localhost:4000",
   secret: process.env.BETTER_AUTH_SECRET,
+  trustedOrigins: [process.env.FRONTEND_URL || "http://localhost:3002"],
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
