@@ -54,6 +54,11 @@ export const candidateApplications = pgTable(
     campaignId: uuid("campaign_id"),
     assignedAgentId: text("assigned_agent_id").references(() => user.id),
     sentToClient: boolean("sent_to_client").notNull().default(false),
+    sentToHiringManager: boolean("sent_to_hiring_manager")
+      .notNull()
+      .default(false),
+    rejectReason: text("reject_reason"),
+    qualificationNotes: text("qualification_notes"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },

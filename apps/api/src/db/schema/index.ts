@@ -8,3 +8,5 @@ export * from "./applications.js";
 export * from "./files.js";
 export * from "./activity-log.js";
 export * from "./organizations.js";
+export * from "./tags.js";
+export * from "./tasks.js";

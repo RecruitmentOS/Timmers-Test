@@ -88,6 +88,24 @@ CREATE POLICY "client_user_assignments_tenant_insert" ON "client_user_assignment
 CREATE POLICY "client_user_assignments_tenant_update" ON "client_user_assignments" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
 CREATE POLICY "client_user_assignments_tenant_delete" ON "client_user_assignments" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
 
+-- tasks
+CREATE POLICY "tasks_tenant_select" ON "tasks" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "tasks_tenant_insert" ON "tasks" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "tasks_tenant_update" ON "tasks" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "tasks_tenant_delete" ON "tasks" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
+-- task_auto_rules
+CREATE POLICY "task_auto_rules_tenant_select" ON "task_auto_rules" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "task_auto_rules_tenant_insert" ON "task_auto_rules" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "task_auto_rules_tenant_update" ON "task_auto_rules" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "task_auto_rules_tenant_delete" ON "task_auto_rules" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
+-- application_tags
+CREATE POLICY "application_tags_tenant_select" ON "application_tags" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "application_tags_tenant_insert" ON "application_tags" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "application_tags_tenant_update" ON "application_tags" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "application_tags_tenant_delete" ON "application_tags" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
 -- Step 3: Force RLS on all tenant-scoped tables (applies even to table owner)
 ALTER TABLE pipeline_stages FORCE ROW LEVEL SECURITY;
 ALTER TABLE clients FORCE ROW LEVEL SECURITY;
@@ -101,3 +119,6 @@ ALTER TABLE application_stage_history FORCE ROW LEVEL SECURITY;
 ALTER TABLE file_metadata FORCE ROW LEVEL SECURITY;
 ALTER TABLE activity_log FORCE ROW LEVEL SECURITY;
 ALTER TABLE client_user_assignments FORCE ROW LEVEL SECURITY;
+ALTER TABLE tasks FORCE ROW LEVEL SECURITY;
+ALTER TABLE task_auto_rules FORCE ROW LEVEL SECURITY;
+ALTER TABLE application_tags FORCE ROW LEVEL SECURITY;
