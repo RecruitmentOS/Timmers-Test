@@ -17,6 +17,7 @@ import { dashboardRoutes } from "./routes/dashboard.routes.js";
 import type { AppEnv } from "./lib/app-env.js";
 import { startJobQueue } from "./lib/job-queue.js";
 import { registerJobHandlers } from "./jobs/job-handlers.js";
+import { initSocketIO } from "./lib/socket.js";
 
 const app = new Hono<AppEnv>();
 
@@ -70,8 +71,11 @@ app.route("/api/dashboard", dashboardRoutes);
 await startJobQueue();
 await registerJobHandlers();
 
-serve({ fetch: app.fetch, port: 4000 }, (info) => {
+const httpServer = serve({ fetch: app.fetch, port: 4000 }, (info) => {
   console.log(`API server running on http://localhost:${info.port}`);
 });
+
+// Attach Socket.IO to the existing HTTP server (same port)
+initSocketIO(httpServer);
 
 export type AppType = typeof app;
