@@ -18,6 +18,7 @@ import { commentRoutes } from "./routes/comment.routes.js";
 import { notificationRoutes } from "./routes/notification.routes.js";
 import { activityRoutes } from "./routes/activity.routes.js";
 import { reportRoutes } from "./routes/report.routes.js";
+import { portalRoutes } from "./routes/portal.routes.js";
 import type { AppEnv } from "./lib/app-env.js";
 import { startJobQueue } from "./lib/job-queue.js";
 import { registerJobHandlers } from "./jobs/job-handlers.js";
@@ -73,6 +74,7 @@ app.route("/api/comments", commentRoutes);
 app.route("/api/notifications", notificationRoutes);
 app.route("/api/activity", activityRoutes);
 app.route("/api/reports", reportRoutes);
+app.route("/api/portal", portalRoutes);
 
 // Boot pg-boss job queue + register handlers before listening.
 // Gated by JOBS_ENABLED env var so dev can opt out.
