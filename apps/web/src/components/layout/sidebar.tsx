@@ -57,13 +57,19 @@ const AGENT_NAV: NavItem[] = [
   { label: "Tasks", href: "/agent/tasks", icon: ListChecks },
 ];
 
+const HM_NAV: NavItem[] = [
+  { label: "Dashboard", href: "/hiring-manager", icon: LayoutDashboard },
+  { label: "Vacatures", href: "/hiring-manager/vacancies", icon: Briefcase },
+];
+
 const NAV_MAP = {
   full: FULL_NAV,
   client: CLIENT_NAV,
   agent: AGENT_NAV,
+  hm: HM_NAV,
 } as const;
 
-export type SidebarVariant = "full" | "client" | "agent";
+export type SidebarVariant = "full" | "client" | "agent" | "hm";
 
 export function AppSidebar({ variant = "full" }: { variant?: SidebarVariant }) {
   const pathname = usePathname();
@@ -79,7 +85,7 @@ export function AppSidebar({ variant = "full" }: { variant?: SidebarVariant }) {
     <SidebarRoot collapsible="icon" className="bg-slate-900 border-slate-800">
       <SidebarHeader className="p-4">
         <Link
-          href={variant === "client" ? "/portal" : variant === "agent" ? "/agent" : "/dashboard"}
+          href={variant === "client" ? "/portal" : variant === "agent" ? "/agent" : variant === "hm" ? "/hiring-manager" : "/dashboard"}
           className="flex items-center gap-2 text-slate-100 group-data-[collapsible=icon]:justify-center"
         >
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white font-bold text-sm">
