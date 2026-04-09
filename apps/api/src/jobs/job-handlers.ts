@@ -2,9 +2,16 @@ import { and, eq } from "drizzle-orm";
 import type { Job } from "pg-boss";
 import { getJobQueue } from "../lib/job-queue.js";
 import { withTenantContext } from "../lib/with-tenant-context.js";
-import { tasks } from "../db/schema/index.js";
+import { tasks, comments } from "../db/schema/index.js";
+import { user } from "../db/schema/auth.js";
+import { getIO } from "../lib/socket.js";
 
 type OverdueReminderData = { taskId: string; orgId: string };
+type SendNotificationEmailData = {
+  mentionedUserIds: string[];
+  commentId: string;
+  orgId: string;
+};
 
 /**
  * Register all pg-boss job handlers.
@@ -46,6 +53,88 @@ export async function registerJobHandlers(): Promise<void> {
         console.log(
           `[jobs] task.overdue_reminder: task ${job.data.taskId} still open past due`
         );
+      });
+    }
+  );
+
+  // Send notification email for @mentions when user is offline >15min (per D-06).
+  await boss.work<SendNotificationEmailData>(
+    "send-notification-email",
+    async ([job]: Job<SendNotificationEmailData>[]) => {
+      const { mentionedUserIds, commentId, orgId } = job.data;
+
+      await withTenantContext(orgId, async (tx) => {
+        // Fetch the comment for context
+        const [comment] = await tx
+          .select()
+          .from(comments)
+          .where(eq(comments.id, commentId));
+
+        if (!comment) {
+          console.log(
+            `[jobs] send-notification-email: comment ${commentId} not found — noop`
+          );
+          return;
+        }
+
+        // Fetch author name
+        const [author] = await tx
+          .select({ name: user.name })
+          .from(user)
+          .where(eq(user.id, comment.authorId));
+
+        for (const userId of mentionedUserIds) {
+          // Check if user is online via Socket.IO room membership
+          const io = getIO();
+          const userRoom = io.sockets.adapter.rooms.get(`user:${userId}`);
+          if (userRoom && userRoom.size > 0) {
+            // User is online — skip email
+            console.log(
+              `[jobs] send-notification-email: user ${userId} is online — skipping`
+            );
+            continue;
+          }
+
+          // Fetch recipient info for email
+          const [recipient] = await tx
+            .select({ name: user.name, email: user.email, language: user.language })
+            .from(user)
+            .where(eq(user.id, userId));
+
+          if (!recipient) continue;
+
+          // Send email via Resend (or log if RESEND_API_KEY not set)
+          if (process.env.RESEND_API_KEY) {
+            try {
+              const { Resend } = await import("resend");
+              const resend = new Resend(process.env.RESEND_API_KEY);
+              const subject =
+                recipient.language === "en"
+                  ? `${author?.name ?? "Someone"} mentioned you in a comment`
+                  : `${author?.name ?? "Iemand"} heeft je genoemd in een reactie`;
+
+              await resend.emails.send({
+                from: "Recruitment OS <noreply@recruitment-os.nl>",
+                to: recipient.email,
+                subject,
+                html: `<p>${subject}</p><blockquote>${comment.body.slice(0, 300)}</blockquote>`,
+              });
+
+              console.log(
+                `[jobs] send-notification-email: sent to ${recipient.email}`
+              );
+            } catch (err) {
+              console.error(
+                `[jobs] send-notification-email: Resend error for ${recipient.email}`,
+                err
+              );
+            }
+          } else {
+            console.log(
+              `[jobs] send-notification-email: RESEND_API_KEY not set — would email ${recipient.email} about mention by ${author?.name}`
+            );
+          }
+        }
       });
     }
   );

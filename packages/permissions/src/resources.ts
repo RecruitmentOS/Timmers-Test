@@ -10,6 +10,9 @@ export const RESOURCES = {
   report: ["read"],
   settings: ["read", "update"],
   user: ["create", "read", "update", "delete", "invite"],
+  comment: ["create", "read", "update", "delete"],
+  notification: ["read", "update"],
+  activity: ["read"],
 } as const;
 
 export type Resource = keyof typeof RESOURCES;
