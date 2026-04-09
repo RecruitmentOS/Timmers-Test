@@ -15,3 +15,7 @@ export * from "./bulk.js";
 export * from "./dashboard.js";
 export * from "./tag.js";
 export * from "./task.js";
+export * from "./comment.js";
+export * from "./notification.js";
+export * from "./report.js";
+export * from "./activity.js";
