@@ -21,6 +21,7 @@ import {
 import { useIsEmployer } from "@/lib/use-mode";
 import { PipelineColumn } from "./pipeline-column";
 import { QualificationDrawer } from "@/components/qualification/qualification-drawer";
+import { usePipelineSync } from "@/hooks/use-socket";
 
 type Props = {
   vacancyId: string;
@@ -36,6 +37,8 @@ export function PipelineBoard({ vacancyId, filters, compact }: Props) {
   const { data: board, isLoading, error } = usePipeline(vacancyId, filters);
   const moveStage = useMoveStage(vacancyId);
   const isEmployer = useIsEmployer();
+  // Realtime: subscribe to pipeline updates from other users
+  usePipelineSync(vacancyId);
   const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
 
   if (isLoading || !board) {

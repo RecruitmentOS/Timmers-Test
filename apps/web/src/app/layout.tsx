@@ -7,6 +7,7 @@ import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { cn } from "@/lib/utils";
 import { QueryProvider } from "@/lib/query-client";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { SocketProvider } from "@/providers/socket-provider";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -28,11 +29,13 @@ export default async function RootLayout({
     <html lang={locale} className={cn("font-sans antialiased", inter.variable)}>
       <body>
         <NextIntlClientProvider messages={messages}>
-          <NuqsAdapter>
-            <QueryProvider>
-              <TooltipProvider>{children}</TooltipProvider>
-            </QueryProvider>
-          </NuqsAdapter>
+          <SocketProvider>
+            <NuqsAdapter>
+              <QueryProvider>
+                <TooltipProvider>{children}</TooltipProvider>
+              </QueryProvider>
+            </NuqsAdapter>
+          </SocketProvider>
         </NextIntlClientProvider>
       </body>
     </html>
