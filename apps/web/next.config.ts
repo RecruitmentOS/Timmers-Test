@@ -1,7 +1,10 @@
+import createNextIntlPlugin from "next-intl/plugin";
 import type { NextConfig } from "next";
+
+const withNextIntl = createNextIntlPlugin();
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@recruitment-os/types", "@recruitment-os/permissions"],
 };
 
-export default nextConfig;
+export default withNextIntl(nextConfig);

@@ -1,6 +1,8 @@
 import "./globals.css";
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
+import { NextIntlClientProvider } from "next-intl";
+import { getLocale, getMessages } from "next-intl/server";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import { cn } from "@/lib/utils";
 import { QueryProvider } from "@/lib/query-client";
@@ -14,19 +16,24 @@ export const metadata: Metadata = {
     "Recruitment operating system for high-volume blue-collar hiring",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const locale = await getLocale();
+  const messages = await getMessages();
+
   return (
-    <html lang="en" className={cn("font-sans antialiased", inter.variable)}>
+    <html lang={locale} className={cn("font-sans antialiased", inter.variable)}>
       <body>
-        <NuqsAdapter>
-          <QueryProvider>
-            <TooltipProvider>{children}</TooltipProvider>
-          </QueryProvider>
-        </NuqsAdapter>
+        <NextIntlClientProvider messages={messages}>
+          <NuqsAdapter>
+            <QueryProvider>
+              <TooltipProvider>{children}</TooltipProvider>
+            </QueryProvider>
+          </NuqsAdapter>
+        </NextIntlClientProvider>
       </body>
     </html>
   );

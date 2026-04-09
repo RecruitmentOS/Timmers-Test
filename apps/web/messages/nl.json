@@ -1,0 +1,18 @@
+{
+  "common": {
+    "save": "Opslaan",
+    "cancel": "Annuleren",
+    "delete": "Verwijderen",
+    "edit": "Bewerken",
+    "search": "Zoeken",
+    "filter": "Filter",
+    "loading": "Laden...",
+    "error": "Er ging iets mis",
+    "retry": "Probeer opnieuw",
+    "noResults": "Geen resultaten",
+    "confirm": "Bevestigen",
+    "back": "Terug",
+    "next": "Volgende",
+    "close": "Sluiten"
+  }
+}
