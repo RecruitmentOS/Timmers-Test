@@ -52,9 +52,9 @@ const CLIENT_NAV: NavItem[] = [
 ];
 
 const AGENT_NAV: NavItem[] = [
-  { label: "Dashboard", href: "/agent", icon: LayoutDashboard },
-  { label: "Vacancies", href: "/agent/vacancies", icon: Briefcase },
-  { label: "Tasks", href: "/agent/tasks", icon: ListChecks },
+  { label: "Mijn kandidaten", href: "/agent", icon: Users },
+  { label: "Mijn taken", href: "/agent/tasks", icon: ListChecks },
+  { label: "Stats", href: "/agent/stats", icon: BarChart3 },
 ];
 
 const NAV_MAP = {
