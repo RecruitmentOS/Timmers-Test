@@ -9,6 +9,7 @@ import {
   Building2,
   Settings,
   ListChecks,
+  BarChart3,
   LogOut,
   ChevronsLeft,
 } from "lucide-react";
@@ -41,6 +42,7 @@ const FULL_NAV: NavItem[] = [
   { label: "Candidates", href: "/candidates", icon: Users },
   { label: "Taken", href: "/tasks", icon: ListChecks },
   { label: "Clients", href: "/clients", icon: Building2 },
+  { label: "Rapportages", href: "/reports", icon: BarChart3 },
   { label: "Settings", href: "/settings", icon: Settings },
 ];
 
