@@ -2,6 +2,7 @@
 
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar, type SidebarVariant } from "./sidebar";
+import { AppHeader } from "./app-header";
 
 export default function AppShell({
   variant,
@@ -13,9 +14,12 @@ export default function AppShell({
   return (
     <SidebarProvider>
       <AppSidebar variant={variant} />
-      <main className="flex-1 overflow-auto bg-white dark:bg-slate-950">
-        <div className="p-6">{children}</div>
-      </main>
+      <div className="flex flex-1 flex-col overflow-auto bg-white dark:bg-slate-950">
+        <AppHeader />
+        <main className="flex-1 overflow-auto">
+          <div className="p-6">{children}</div>
+        </main>
+      </div>
     </SidebarProvider>
   );
 }
