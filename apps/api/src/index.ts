@@ -14,6 +14,7 @@ import { fileRoutes } from "./routes/file.routes.js";
 import { adminRoutes } from "./routes/admin.routes.js";
 import { taskRoutes } from "./routes/task.routes.js";
 import { dashboardRoutes } from "./routes/dashboard.routes.js";
+import { reportRoutes } from "./routes/report.routes.js";
 import type { AppEnv } from "./lib/app-env.js";
 import { startJobQueue } from "./lib/job-queue.js";
 import { registerJobHandlers } from "./jobs/job-handlers.js";
@@ -64,6 +65,7 @@ app.route("/api/files", fileRoutes);
 app.route("/api/admin", adminRoutes);
 app.route("/api/tasks", taskRoutes);
 app.route("/api/dashboard", dashboardRoutes);
+app.route("/api/reports", reportRoutes);
 
 // Boot pg-boss job queue + register handlers before listening.
 // Gated by JOBS_ENABLED env var so dev can opt out.
