@@ -14,5 +14,191 @@
     "back": "Terug",
     "next": "Volgende",
     "close": "Sluiten"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "vacancies": "Vacatures",
+    "candidates": "Kandidaten",
+    "pipeline": "Pipeline",
+    "tasks": "Taken",
+    "clients": "Klanten",
+    "reports": "Rapportages",
+    "settings": "Instellingen"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Overzicht van vandaag",
+    "openVacancies": "Open vacatures",
+    "newCandidates": "Nieuwe kandidaten",
+    "overdueFollowups": "Openstaande opvolging",
+    "qualifiedThisWeek": "Gekwalificeerd deze week",
+    "openTasks": "Openstaande taken",
+    "sourceSnapshot": "Bronverdeling"
+  },
+  "vacancies": {
+    "title": "Vacatures",
+    "create": "Nieuwe vacature",
+    "status": {
+      "draft": "Concept",
+      "active": "Actief",
+      "paused": "Gepauzeerd",
+      "closed": "Gesloten"
+    },
+    "fields": {
+      "title": "Titel",
+      "location": "Locatie",
+      "client": "Klant",
+      "owner": "Eigenaar",
+      "status": "Status"
+    }
+  },
+  "candidates": {
+    "title": "Kandidaten",
+    "create": "Nieuwe kandidaat",
+    "fields": {
+      "name": "Naam",
+      "email": "E-mail",
+      "phone": "Telefoon",
+      "city": "Plaats",
+      "source": "Bron"
+    }
+  },
+  "pipeline": {
+    "title": "Pipeline",
+    "moveError": "Kon kandidaat niet verplaatsen",
+    "emptyStage": "Geen kandidaten in deze fase"
+  },
+  "tasks": {
+    "title": "Taken",
+    "create": "Nieuwe taak",
+    "complete": "Voltooien",
+    "overdue": "Te laat",
+    "fields": {
+      "title": "Titel",
+      "assignee": "Toegewezen aan",
+      "dueDate": "Vervaldatum",
+      "priority": "Prioriteit",
+      "status": "Status"
+    },
+    "priority": {
+      "low": "Laag",
+      "medium": "Gemiddeld",
+      "high": "Hoog",
+      "urgent": "Urgent"
+    }
+  },
+  "bulk": {
+    "move": "Verplaatsen",
+    "reject": "Afwijzen",
+    "assign": "Toewijzen",
+    "tag": "Label toevoegen",
+    "execute": "Uitvoeren",
+    "selectAll": "Selecteer alle {count} overeenkomende",
+    "selected": "{count} geselecteerd",
+    "confirmTitle": "Bulkactie bevestigen",
+    "confirmMessage": "Weet je zeker dat je deze actie wilt uitvoeren op {count} kandidaten?"
+  },
+  "qualification": {
+    "title": "Kwalificatie",
+    "yes": "Ja",
+    "maybe": "Misschien",
+    "no": "Nee",
+    "rejectReason": "Reden voor afwijzing",
+    "notes": "Notities"
+  },
+  "comments": {
+    "title": "Reacties",
+    "placeholder": "Schrijf een reactie...",
+    "submit": "Plaats reactie",
+    "edit": "Reactie bewerken",
+    "editSave": "Reactie opslaan",
+    "editCancel": "Bewerking annuleren",
+    "delete": "Verwijderen",
+    "deleteConfirm": "Weet je zeker dat je deze reactie wilt verwijderen? Dit kan niet ongedaan worden gemaakt.",
+    "empty": "Nog geen reacties",
+    "emptyBody": "Plaats de eerste reactie om de samenwerking te starten.",
+    "error": "Reactie kon niet worden geplaatst. Probeer het opnieuw.",
+    "internal": "Intern",
+    "shared": "Gedeeld",
+    "addNote": "Notitie toevoegen"
+  },
+  "activity": {
+    "title": "Activiteit",
+    "empty": "Geen activiteit",
+    "emptyBody": "Activiteiten verschijnen hier zodra er wijzigingen worden gemaakt.",
+    "loadMore": "Toon oudere activiteiten",
+    "stageChanged": "{actor} heeft {candidate} verplaatst naar {stage}",
+    "qualified": "{actor} heeft {candidate} gekwalificeerd als {status}",
+    "commentAdded": "{actor} heeft een reactie geplaatst",
+    "taskCreated": "{actor} heeft een taak aangemaakt",
+    "taskCompleted": "{actor} heeft een taak voltooid",
+    "assigned": "{actor} heeft {candidate} toegewezen aan {assignee}",
+    "hmFeedback": "{actor} heeft feedback gegeven",
+    "hmRequest": "{actor} heeft meer kandidaten aangevraagd"
+  },
+  "notifications": {
+    "title": "Meldingen",
+    "empty": "Geen nieuwe meldingen",
+    "markAllRead": "Alles als gelezen markeren",
+    "mention": "{actor} heeft je genoemd in een reactie",
+    "assignment": "{actor} heeft je iets toegewezen",
+    "hmFeedback": "{actor} heeft feedback gegeven op een kandidaat",
+    "hmRequest": "{actor} heeft meer kandidaten aangevraagd"
+  },
+  "portal": {
+    "client": {
+      "title": "Klantenportaal",
+      "vacancies": "Vacatures",
+      "candidates": "Kandidaten",
+      "approve": "Goedkeuren",
+      "reject": "Afwijzen",
+      "rejectReason": "Reden voor afwijzing",
+      "rejectPlaceholder": "Geef een reden op voor de afwijzing.",
+      "emptyVacancies": "Geen vacatures",
+      "emptyVacanciesBody": "Er zijn momenteel geen actieve vacatures aan u gekoppeld.",
+      "emptyCandidates": "Geen kandidaten",
+      "emptyCandidatesBody": "Er zijn nog geen kandidaten voorgedragen voor deze vacature."
+    },
+    "hm": {
+      "title": "Hiring Manager Portaal",
+      "vacancies": "Vacatures",
+      "candidates": "Kandidaten",
+      "requestMore": "Meer kandidaten aanvragen",
+      "thumbUp": "Positief",
+      "thumbDown": "Negatief",
+      "feedback": "Feedback"
+    },
+    "agent": {
+      "myCandidates": "Mijn kandidaten",
+      "myTasks": "Mijn taken",
+      "stats": "Stats"
+    }
+  },
+  "reports": {
+    "title": "Rapportages",
+    "totalCandidates": "Totaal kandidaten",
+    "qualifiedCandidates": "Gekwalificeerde kandidaten",
+    "stageFunnel": "Fase-trechter",
+    "timeToFirstContact": "Tijd tot eerste contact",
+    "sourceBreakdown": "Bronverdeling",
+    "ownerActivity": "Activiteit per eigenaar",
+    "exportCsv": "Exporteer CSV",
+    "period": {
+      "7d": "Laatste 7 dagen",
+      "30d": "Laatste 30 dagen",
+      "90d": "Laatste 90 dagen",
+      "custom": "Aangepaste periode"
+    }
+  },
+  "errors": {
+    "generic": "Er ging iets mis bij het laden. Probeer het opnieuw.",
+    "notFound": "Pagina niet gevonden",
+    "unauthorized": "Je hebt geen toegang tot deze pagina"
+  },
+  "formats": {
+    "dateShort": "{date, date, short}",
+    "dateLong": "{date, date, long}",
+    "currency": "{amount, number, ::currency/EUR}",
+    "number": "{value, number}"
   }
 }

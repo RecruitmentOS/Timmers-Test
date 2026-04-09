@@ -14,5 +14,191 @@
     "back": "Back",
     "next": "Next",
     "close": "Close"
+  },
+  "nav": {
+    "dashboard": "Dashboard",
+    "vacancies": "Vacancies",
+    "candidates": "Candidates",
+    "pipeline": "Pipeline",
+    "tasks": "Tasks",
+    "clients": "Clients",
+    "reports": "Reports",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "subtitle": "Today's overview",
+    "openVacancies": "Open vacancies",
+    "newCandidates": "New candidates",
+    "overdueFollowups": "Overdue follow-ups",
+    "qualifiedThisWeek": "Qualified this week",
+    "openTasks": "Open tasks",
+    "sourceSnapshot": "Source breakdown"
+  },
+  "vacancies": {
+    "title": "Vacancies",
+    "create": "New vacancy",
+    "status": {
+      "draft": "Draft",
+      "active": "Active",
+      "paused": "Paused",
+      "closed": "Closed"
+    },
+    "fields": {
+      "title": "Title",
+      "location": "Location",
+      "client": "Client",
+      "owner": "Owner",
+      "status": "Status"
+    }
+  },
+  "candidates": {
+    "title": "Candidates",
+    "create": "New candidate",
+    "fields": {
+      "name": "Name",
+      "email": "Email",
+      "phone": "Phone",
+      "city": "City",
+      "source": "Source"
+    }
+  },
+  "pipeline": {
+    "title": "Pipeline",
+    "moveError": "Could not move candidate",
+    "emptyStage": "No candidates in this stage"
+  },
+  "tasks": {
+    "title": "Tasks",
+    "create": "New task",
+    "complete": "Complete",
+    "overdue": "Overdue",
+    "fields": {
+      "title": "Title",
+      "assignee": "Assigned to",
+      "dueDate": "Due date",
+      "priority": "Priority",
+      "status": "Status"
+    },
+    "priority": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High",
+      "urgent": "Urgent"
+    }
+  },
+  "bulk": {
+    "move": "Move",
+    "reject": "Reject",
+    "assign": "Assign",
+    "tag": "Add label",
+    "execute": "Execute",
+    "selectAll": "Select all {count} matching",
+    "selected": "{count} selected",
+    "confirmTitle": "Confirm bulk action",
+    "confirmMessage": "Are you sure you want to perform this action on {count} candidates?"
+  },
+  "qualification": {
+    "title": "Qualification",
+    "yes": "Yes",
+    "maybe": "Maybe",
+    "no": "No",
+    "rejectReason": "Rejection reason",
+    "notes": "Notes"
+  },
+  "comments": {
+    "title": "Comments",
+    "placeholder": "Write a comment...",
+    "submit": "Post comment",
+    "edit": "Edit comment",
+    "editSave": "Save comment",
+    "editCancel": "Cancel edit",
+    "delete": "Delete",
+    "deleteConfirm": "Are you sure you want to delete this comment? This cannot be undone.",
+    "empty": "No comments yet",
+    "emptyBody": "Post the first comment to start collaborating.",
+    "error": "Comment could not be posted. Please try again.",
+    "internal": "Internal",
+    "shared": "Shared",
+    "addNote": "Add note"
+  },
+  "activity": {
+    "title": "Activity",
+    "empty": "No activity",
+    "emptyBody": "Activities will appear here once changes are made.",
+    "loadMore": "Show older activities",
+    "stageChanged": "{actor} moved {candidate} to {stage}",
+    "qualified": "{actor} qualified {candidate} as {status}",
+    "commentAdded": "{actor} posted a comment",
+    "taskCreated": "{actor} created a task",
+    "taskCompleted": "{actor} completed a task",
+    "assigned": "{actor} assigned {candidate} to {assignee}",
+    "hmFeedback": "{actor} gave feedback",
+    "hmRequest": "{actor} requested more candidates"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "No new notifications",
+    "markAllRead": "Mark all as read",
+    "mention": "{actor} mentioned you in a comment",
+    "assignment": "{actor} assigned something to you",
+    "hmFeedback": "{actor} gave feedback on a candidate",
+    "hmRequest": "{actor} requested more candidates"
+  },
+  "portal": {
+    "client": {
+      "title": "Client Portal",
+      "vacancies": "Vacancies",
+      "candidates": "Candidates",
+      "approve": "Approve",
+      "reject": "Reject",
+      "rejectReason": "Rejection reason",
+      "rejectPlaceholder": "Please provide a reason for rejection.",
+      "emptyVacancies": "No vacancies",
+      "emptyVacanciesBody": "There are currently no active vacancies linked to you.",
+      "emptyCandidates": "No candidates",
+      "emptyCandidatesBody": "No candidates have been submitted for this vacancy yet."
+    },
+    "hm": {
+      "title": "Hiring Manager Portal",
+      "vacancies": "Vacancies",
+      "candidates": "Candidates",
+      "requestMore": "Request more candidates",
+      "thumbUp": "Positive",
+      "thumbDown": "Negative",
+      "feedback": "Feedback"
+    },
+    "agent": {
+      "myCandidates": "My candidates",
+      "myTasks": "My tasks",
+      "stats": "Stats"
+    }
+  },
+  "reports": {
+    "title": "Reports",
+    "totalCandidates": "Total candidates",
+    "qualifiedCandidates": "Qualified candidates",
+    "stageFunnel": "Stage funnel",
+    "timeToFirstContact": "Time to first contact",
+    "sourceBreakdown": "Source breakdown",
+    "ownerActivity": "Activity per owner",
+    "exportCsv": "Export CSV",
+    "period": {
+      "7d": "Last 7 days",
+      "30d": "Last 30 days",
+      "90d": "Last 90 days",
+      "custom": "Custom period"
+    }
+  },
+  "errors": {
+    "generic": "Something went wrong loading data. Please try again.",
+    "notFound": "Page not found",
+    "unauthorized": "You do not have access to this page"
+  },
+  "formats": {
+    "dateShort": "{date, date, short}",
+    "dateLong": "{date, date, long}",
+    "currency": "{amount, number, ::currency/EUR}",
+    "number": "{value, number}"
   }
 }
