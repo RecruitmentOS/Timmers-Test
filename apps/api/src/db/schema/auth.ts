@@ -4,6 +4,7 @@ import {
   timestamp,
   boolean,
   uuid,
+  varchar,
 } from "drizzle-orm/pg-core";
 
 // ============================================================
@@ -18,6 +19,8 @@ export const user = pgTable("user", {
   email: text("email").notNull().unique(),
   emailVerified: boolean("email_verified").notNull().default(false),
   image: text("image"),
+  /** Preferred language for this user: 'nl' | 'en'. Used by middleware for i18n locale resolution (D-16). */
+  language: varchar("language", { length: 5 }).notNull().default("nl"),
   createdAt: timestamp("created_at").defaultNow().notNull(),
   updatedAt: timestamp("updated_at").defaultNow().notNull(),
 });

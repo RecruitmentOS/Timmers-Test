@@ -10,3 +10,5 @@ export * from "./activity-log.js";
 export * from "./organizations.js";
 export * from "./tags.js";
 export * from "./tasks.js";
+export * from "./comments.js";
+export * from "./notifications.js";

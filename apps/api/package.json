@@ -17,6 +17,7 @@
     "@aws-sdk/s3-request-presigner": "^3",
     "@hono/node-server": "^1",
     "@hono/zod-validator": "^0.7.6",
+    "@react-email/components": "^1.0.11",
     "@recruitment-os/permissions": "workspace:*",
     "@recruitment-os/types": "workspace:*",
     "better-auth": "^1.5",
@@ -25,6 +26,9 @@
     "hono": "^4",
     "pg-boss": "^12.15.0",
     "postgres": "^3",
+    "recharts": "^3.8.1",
+    "resend": "^6.10.0",
+    "socket.io": "^4.8.3",
     "zod": "^4"
   },
   "devDependencies": {

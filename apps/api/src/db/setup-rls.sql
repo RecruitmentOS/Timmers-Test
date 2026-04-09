@@ -106,6 +106,21 @@ CREATE POLICY "application_tags_tenant_insert" ON "application_tags" AS PERMISSI
 CREATE POLICY "application_tags_tenant_update" ON "application_tags" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
 CREATE POLICY "application_tags_tenant_delete" ON "application_tags" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
 
+-- comments
+CREATE POLICY "comments_tenant_select" ON "comments" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "comments_tenant_insert" ON "comments" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "comments_tenant_update" ON "comments" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "comments_tenant_delete" ON "comments" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
+-- notifications (tenant-level policies)
+CREATE POLICY "notifications_tenant_select" ON "notifications" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "notifications_tenant_insert" ON "notifications" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "notifications_tenant_update" ON "notifications" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "notifications_tenant_delete" ON "notifications" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
+-- notifications (per-user isolation policy — users can only see their own notifications)
+CREATE POLICY "notifications_user_isolation" ON "notifications" AS PERMISSIVE FOR SELECT TO "app_user" USING ("user_id" = current_setting('app.user_id', true)::text);
+
 -- Step 3: Force RLS on all tenant-scoped tables (applies even to table owner)
 ALTER TABLE pipeline_stages FORCE ROW LEVEL SECURITY;
 ALTER TABLE clients FORCE ROW LEVEL SECURITY;
@@ -122,3 +137,5 @@ ALTER TABLE client_user_assignments FORCE ROW LEVEL SECURITY;
 ALTER TABLE tasks FORCE ROW LEVEL SECURITY;
 ALTER TABLE task_auto_rules FORCE ROW LEVEL SECURITY;
 ALTER TABLE application_tags FORCE ROW LEVEL SECURITY;
+ALTER TABLE comments FORCE ROW LEVEL SECURITY;
+ALTER TABLE notifications FORCE ROW LEVEL SECURITY;
