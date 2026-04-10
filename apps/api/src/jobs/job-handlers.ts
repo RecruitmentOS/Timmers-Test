@@ -11,8 +11,11 @@ import {
   getSubject,
 } from "../emails/mention-notification.js";
 import { cvParseService } from "../services/cv-parse.service.js";
+import { geocodingService } from "../services/geocoding.service.js";
 
 type OverdueReminderData = { taskId: string; orgId: string };
+type GeocodeCandidateData = { orgId: string; candidateId: string; city: string };
+type GeocodeVacancyData = { orgId: string; vacancyId: string; location: string };
 type DocumentExpiryReminderData = {
   documentId: string;
   candidateId: string;
@@ -190,6 +193,43 @@ export async function registerJobHandlers(): Promise<void> {
         console.log(`[jobs] cv.parse: completed for file ${fileId}`);
       } catch (err) {
         console.error(`[jobs] cv.parse: failed for file ${fileId}`, err);
+        throw err; // pg-boss will retry
+      }
+    }
+  );
+
+  // Geocode candidate — calls Nominatim for candidate city.
+  // Respects 1 req/sec rate limit via geocodingService internal throttle.
+  await boss.work<GeocodeCandidateData>(
+    "geo.geocode_candidate",
+    { retryLimit: 2, retryDelay: 5 },
+    async ([job]: Job<GeocodeCandidateData>[]) => {
+      const { orgId, candidateId, city } = job.data;
+      try {
+        const result = await geocodingService.geocodeCandidate(orgId, candidateId, city);
+        console.log(
+          `[jobs] geo.geocode_candidate: ${candidateId} → ${result ? `${result.latitude},${result.longitude}` : "no result"}`
+        );
+      } catch (err) {
+        console.error(`[jobs] geo.geocode_candidate: failed for ${candidateId}`, err);
+        throw err; // pg-boss will retry
+      }
+    }
+  );
+
+  // Geocode vacancy — calls Nominatim for vacancy location.
+  await boss.work<GeocodeVacancyData>(
+    "geo.geocode_vacancy",
+    { retryLimit: 2, retryDelay: 5 },
+    async ([job]: Job<GeocodeVacancyData>[]) => {
+      const { orgId, vacancyId, location } = job.data;
+      try {
+        const result = await geocodingService.geocodeVacancy(orgId, vacancyId, location);
+        console.log(
+          `[jobs] geo.geocode_vacancy: ${vacancyId} → ${result ? `${result.latitude},${result.longitude}` : "no result"}`
+        );
+      } catch (err) {
+        console.error(`[jobs] geo.geocode_vacancy: failed for ${vacancyId}`, err);
         throw err; // pg-boss will retry
       }
     }
