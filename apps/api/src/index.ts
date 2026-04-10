@@ -25,6 +25,7 @@ import { documentRoutes } from "./routes/document.routes.js";
 import { publicRoutes } from "./routes/public.routes.js";
 import { cvParseRoutes } from "./routes/cv-parse.routes.js";
 import { geocodingRoutes } from "./routes/geocoding.routes.js";
+import { onboardingRoutes } from "./routes/onboarding.routes.js";
 import type { AppEnv } from "./lib/app-env.js";
 import { startJobQueue } from "./lib/job-queue.js";
 import { registerJobHandlers } from "./jobs/job-handlers.js";
@@ -89,6 +90,7 @@ app.route("/api/driver-qualifications", driverQualificationRoutes);
 app.route("/api/documents", documentRoutes);
 app.route("/api/cv-parse", cvParseRoutes);
 app.route("/api/geo", geocodingRoutes);
+app.route("/api/onboarding", onboardingRoutes);
 
 // Boot pg-boss job queue + register handlers before listening.
 // Gated by JOBS_ENABLED env var so dev can opt out.
