@@ -10,6 +10,46 @@ import type {
   CreateVacancyInput,
   UpdateVacancyInput,
 } from "@recruitment-os/types";
+import { getJobQueue } from "../lib/job-queue.js";
+
+/**
+ * Generate a URL-safe slug from a vacancy title.
+ * Lowercase, replace spaces with hyphens, remove special chars, max 100 chars.
+ */
+export function generateSlug(title: string): string {
+  return title
+    .toLowerCase()
+    .trim()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .slice(0, 100);
+}
+
+/**
+ * Ensure slug uniqueness within an org by appending a counter suffix.
+ */
+async function ensureUniqueSlug(
+  orgId: string,
+  baseSlug: string
+): Promise<string> {
+  let slug = baseSlug;
+  let counter = 0;
+
+  while (true) {
+    const existing = await withTenantContext(orgId, async (tx) => {
+      const rows = await tx
+        .select({ id: vacancies.id })
+        .from(vacancies)
+        .where(eq(vacancies.slug, slug));
+      return rows.length > 0;
+    });
+
+    if (!existing) return slug;
+    counter++;
+    slug = `${baseSlug}-${counter}`;
+  }
+}
 
 export const vacancyService = {
   async list(
@@ -60,6 +100,10 @@ export const vacancyService = {
   },
 
   async create(orgId: string, userId: string, data: CreateVacancyInput) {
+    // Auto-generate slug from title
+    const baseSlug = generateSlug(data.title);
+    const slug = await ensureUniqueSlug(orgId, baseSlug);
+
     return withTenantContext(orgId, async (tx) => {
       const [vacancy] = await tx
         .insert(vacancies)
@@ -72,6 +116,7 @@ export const vacancyService = {
           employmentType: data.employmentType ?? null,
           clientId: data.clientId ?? null,
           qualificationCriteria: data.qualificationCriteria ?? null,
+          slug,
         })
         .returning();
 
@@ -84,12 +129,36 @@ export const vacancyService = {
         metadata: { title: vacancy.title },
       });
 
+      // Queue async geocoding if location is provided
+      if (data.location) {
+        try {
+          const boss = getJobQueue();
+          await boss.send("geo.geocode_vacancy", {
+            orgId,
+            vacancyId: vacancy.id,
+            location: data.location,
+          });
+        } catch {
+          console.log("[vacancy] geocoding job queue unavailable, skipping");
+        }
+      }
+
       return vacancy;
     });
   },
 
   async update(orgId: string, id: string, data: UpdateVacancyInput) {
     return withTenantContext(orgId, async (tx) => {
+      // Check if location changed (for geocoding decision)
+      let locationChanged = false;
+      if (data.location !== undefined) {
+        const [existing] = await tx
+          .select({ location: vacancies.location })
+          .from(vacancies)
+          .where(eq(vacancies.id, id));
+        locationChanged = existing?.location !== data.location;
+      }
+
       const [vacancy] = await tx
         .update(vacancies)
         .set({
@@ -108,6 +177,20 @@ export const vacancyService = {
           actorId: vacancy.ownerId,
           metadata: { fields: Object.keys(data) },
         });
+
+        // Queue geocoding if location changed
+        if (locationChanged && data.location) {
+          try {
+            const boss = getJobQueue();
+            await boss.send("geo.geocode_vacancy", {
+              orgId,
+              vacancyId: id,
+              location: data.location,
+            });
+          } catch {
+            console.log("[vacancy] geocoding job queue unavailable, skipping");
+          }
+        }
       }
 
       return vacancy ?? null;

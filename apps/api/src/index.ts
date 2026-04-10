@@ -88,6 +88,7 @@ app.route("/api/agent", agentPortalRoutes);
 app.route("/api/driver-qualifications", driverQualificationRoutes);
 app.route("/api/documents", documentRoutes);
 app.route("/api/cv-parse", cvParseRoutes);
+app.route("/api/geo", geocodingRoutes);
 
 // Boot pg-boss job queue + register handlers before listening.
 // Gated by JOBS_ENABLED env var so dev can opt out.
