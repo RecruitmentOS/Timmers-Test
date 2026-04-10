@@ -24,7 +24,8 @@ export function middleware(request: NextRequest) {
     pathname.startsWith("/forgot-password") ||
     pathname.startsWith("/reset-password") ||
     pathname.startsWith("/magic-link") ||
-    pathname.startsWith("/api")
+    pathname.startsWith("/api") ||
+    pathname.startsWith("/jobs")
   ) {
     const response = NextResponse.next();
     const locale = resolveLocale(request);
