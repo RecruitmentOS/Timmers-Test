@@ -72,6 +72,20 @@ billingRoutes.get(
 );
 
 /**
+ * GET /dashboard — full billing dashboard with usage, trial, status
+ * Requires settings:read permission
+ */
+billingRoutes.get(
+  "/dashboard",
+  requirePermission("settings", "read"),
+  async (c) => {
+    const orgId = c.get("organizationId");
+    const dashboard = await billingService.getBillingDashboard(orgId);
+    return c.json(dashboard);
+  }
+);
+
+/**
  * POST /portal-session — create Stripe billing portal session
  * Requires settings:update permission
  */

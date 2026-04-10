@@ -2,7 +2,7 @@ import Stripe from "stripe";
 import { eq } from "drizzle-orm";
 import { db } from "../db/index.js";
 import { tenantBilling, PLAN_LIMITS } from "../db/schema/billing.js";
-import type { PlanTier, UsageSummary } from "@recruitment-os/types";
+import type { PlanTier, UsageSummary, BillingDashboard } from "@recruitment-os/types";
 
 // ============================================================
 // Dormant-safe Stripe integration (BILL-09)
@@ -141,6 +141,21 @@ export const billingService = {
         maxPlacements: limits.maxPlacements,
       },
       planTier: tier,
+    };
+  },
+
+  /**
+   * Get billing dashboard data including usage, trial, status, and portal availability.
+   */
+  async getBillingDashboard(orgId: string): Promise<BillingDashboard> {
+    const usage = await this.getUsageSummary(orgId);
+    const billing = await this.getTenantBilling(orgId);
+
+    return {
+      usage,
+      trialEndsAt: billing?.trialEndsAt?.toISOString() ?? null,
+      status: (billing?.status as BillingDashboard["status"]) ?? "incomplete",
+      portalUrl: billing?.stripeCustomerId ? "available" : null,
     };
   },
 
