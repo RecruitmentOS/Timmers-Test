@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useOrgSettings, useUpdateOrgSettings } from "@/hooks/use-admin";
+import { useProductTour } from "@/hooks/use-product-tour";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -16,6 +17,7 @@ interface SettingsForm {
 export default function GeneralSettingsPage() {
   const { data: settings, isLoading } = useOrgSettings();
   const updateSettings = useUpdateOrgSettings();
+  const { startTour } = useProductTour();
 
   const {
     register,
@@ -102,6 +104,20 @@ export default function GeneralSettingsPage() {
               </Button>
             </div>
           </form>
+        </CardContent>
+      </Card>
+
+      <Card>
+        <CardHeader>
+          <CardTitle>Rondleiding</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <p className="mb-4 text-sm text-muted-foreground">
+            Bekijk de rondleiding opnieuw om alle functies te ontdekken.
+          </p>
+          <Button variant="outline" onClick={() => startTour()}>
+            Rondleiding opnieuw starten
+          </Button>
         </CardContent>
       </Card>
     </div>
