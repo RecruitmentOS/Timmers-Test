@@ -382,7 +382,19 @@ async function seed() {
   process.exit(0);
 }
 
-seed().catch((err) => {
-  console.error("Seed failed:", err);
-  process.exit(1);
-});
+// --demo flag: seed demo environment with realistic transport data
+if (process.argv.includes("--demo")) {
+  import("./demo-seed.js").then(({ seedDemoEnvironment }) => {
+    seedDemoEnvironment()
+      .then(() => process.exit(0))
+      .catch((err) => {
+        console.error("Demo seed failed:", err);
+        process.exit(1);
+      });
+  });
+} else {
+  seed().catch((err) => {
+    console.error("Seed failed:", err);
+    process.exit(1);
+  });
+}
