@@ -147,7 +147,7 @@ export function CandidateListTable({
                   <QualificationBadge status={r.qualificationStatus} />
                 </TableCell>
                 <TableCell className="text-muted-foreground">
-                  {new Date(r.updatedAt).toLocaleDateString("nl-NL")}
+                  {new Date(r.updatedAt).toLocaleDateString()}
                 </TableCell>
               </TableRow>
             );

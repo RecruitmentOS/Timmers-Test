@@ -25,6 +25,7 @@ import {
 import { useOrgUsers } from "@/hooks/use-activity";
 import { Lock, Pencil, Trash2, MessageSquare } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { getDateLocale } from "@/lib/date-locale";
 import { nl, enUS } from "date-fns/locale";
 import type { Comment, CommentTargetType } from "@recruitment-os/types";
 
@@ -184,6 +185,7 @@ function CommentItem({
           <span className="text-xs text-muted-foreground">
             {formatDistanceToNow(new Date(comment.createdAt), {
               addSuffix: true,
+              locale: getDateLocale(),
             })}
           </span>
           {comment.isInternal && (

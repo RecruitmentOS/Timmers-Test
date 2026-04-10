@@ -21,12 +21,17 @@ function isOverdue(task: AgentTask): boolean {
 }
 
 /**
- * Format a date for display in Dutch locale style.
+ * Format a date for display using the user's locale preference.
  */
 function formatDate(dateStr: string | null): string {
   if (!dateStr) return "";
   const d = new Date(dateStr);
-  return d.toLocaleDateString("nl-NL", {
+  const locale =
+    typeof document !== "undefined" &&
+    document.cookie.includes("NEXT_LOCALE=en")
+      ? "en-GB"
+      : "nl-NL";
+  return d.toLocaleDateString(locale, {
     day: "numeric",
     month: "short",
     year: "numeric",

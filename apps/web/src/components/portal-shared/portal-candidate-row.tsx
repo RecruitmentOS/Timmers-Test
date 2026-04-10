@@ -3,7 +3,7 @@
 import type { ReactNode } from "react";
 import { PortalStatusBadge } from "./portal-status-badge";
 import { formatDistanceToNow } from "date-fns";
-import { nl } from "date-fns/locale";
+import { getDateLocale } from "@/lib/date-locale";
 
 type Props = {
   candidate: {
@@ -36,7 +36,7 @@ export function PortalCandidateRow({ candidate, actions }: Props) {
             <span>
               {formatDistanceToNow(new Date(candidate.appliedDate), {
                 addSuffix: true,
-                locale: nl,
+                locale: getDateLocale(),
               })}
             </span>
           </div>

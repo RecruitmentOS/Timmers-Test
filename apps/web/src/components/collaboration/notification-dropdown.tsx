@@ -11,6 +11,7 @@ import {
   useMarkAllRead,
 } from "@/hooks/use-notifications";
 import { formatDistanceToNow } from "date-fns";
+import { getDateLocale } from "@/lib/date-locale";
 import type { Notification, NotificationKind } from "@recruitment-os/types";
 
 /**
@@ -126,6 +127,7 @@ export function NotificationDropdown({
                 <span className="text-xs text-muted-foreground">
                   {formatDistanceToNow(new Date(n.createdAt), {
                     addSuffix: true,
+                    locale: getDateLocale(),
                   })}
                 </span>
               </div>

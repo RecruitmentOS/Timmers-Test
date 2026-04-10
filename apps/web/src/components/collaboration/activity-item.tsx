@@ -14,6 +14,7 @@ import {
   XCircle,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
+import { getDateLocale } from "@/lib/date-locale";
 import type { ActivityEvent, ActivityEventType } from "@recruitment-os/types";
 
 /**
@@ -107,7 +108,7 @@ export function ActivityItem({ event }: { event: ActivityEvent }) {
         </p>
       </div>
       <span className="shrink-0 text-xs text-muted-foreground">
-        {formatDistanceToNow(new Date(event.createdAt), { addSuffix: true })}
+        {formatDistanceToNow(new Date(event.createdAt), { addSuffix: true, locale: getDateLocale() })}
       </span>
     </div>
   );
