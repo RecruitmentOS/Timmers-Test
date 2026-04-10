@@ -11,6 +11,9 @@ export interface Candidate {
   email: string | null;
   city: string | null;
   source: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  geocodedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;

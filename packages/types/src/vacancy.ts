@@ -17,6 +17,12 @@ export interface Vacancy {
   ownerId: string;
   clientId: string | null;
   qualificationCriteria: unknown | null;
+  slug: string | null;
+  latitude: string | null;
+  longitude: string | null;
+  geocodedAt: Date | null;
+  requiredLicenses: string[] | null;
+  distributionChannels: Record<string, boolean> | null;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -33,6 +39,9 @@ export interface CreateVacancyInput {
   status?: VacancyStatus;
   clientId?: string;
   qualificationCriteria?: unknown;
+  slug?: string;
+  requiredLicenses?: string[];
+  distributionChannels?: Record<string, boolean>;
 }
 
 /**
@@ -46,4 +55,7 @@ export interface UpdateVacancyInput {
   status?: VacancyStatus;
   clientId?: string | null;
   qualificationCriteria?: unknown;
+  slug?: string;
+  requiredLicenses?: string[];
+  distributionChannels?: Record<string, boolean>;
 }
