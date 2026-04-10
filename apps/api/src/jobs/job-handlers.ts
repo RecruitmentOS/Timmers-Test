@@ -202,7 +202,6 @@ export async function registerJobHandlers(): Promise<void> {
   // Respects 1 req/sec rate limit via geocodingService internal throttle.
   await boss.work<GeocodeCandidateData>(
     "geo.geocode_candidate",
-    { retryLimit: 2, retryDelay: 5 },
     async ([job]: Job<GeocodeCandidateData>[]) => {
       const { orgId, candidateId, city } = job.data;
       try {
@@ -220,7 +219,6 @@ export async function registerJobHandlers(): Promise<void> {
   // Geocode vacancy — calls Nominatim for vacancy location.
   await boss.work<GeocodeVacancyData>(
     "geo.geocode_vacancy",
-    { retryLimit: 2, retryDelay: 5 },
     async ([job]: Job<GeocodeVacancyData>[]) => {
       const { orgId, vacancyId, location } = job.data;
       try {

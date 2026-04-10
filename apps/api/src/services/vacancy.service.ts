@@ -137,7 +137,7 @@ export const vacancyService = {
             orgId,
             vacancyId: vacancy.id,
             location: data.location,
-          });
+          }, { retryLimit: 2, retryDelay: 5 });
         } catch {
           console.log("[vacancy] geocoding job queue unavailable, skipping");
         }
@@ -186,7 +186,7 @@ export const vacancyService = {
               orgId,
               vacancyId: id,
               location: data.location,
-            });
+            }, { retryLimit: 2, retryDelay: 5 });
           } catch {
             console.log("[vacancy] geocoding job queue unavailable, skipping");
           }

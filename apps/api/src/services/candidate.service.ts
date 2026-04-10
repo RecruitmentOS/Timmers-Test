@@ -9,6 +9,7 @@ import type {
   CreateCandidateInput,
   UpdateCandidateInput,
 } from "@recruitment-os/types";
+import { getJobQueue } from "../lib/job-queue.js";
 
 export const candidateService = {
   async list(
@@ -124,12 +125,37 @@ export const candidateService = {
         },
       });
 
+      // Queue async geocoding if city is provided
+      if (data.city) {
+        try {
+          const boss = getJobQueue();
+          await boss.send("geo.geocode_candidate", {
+            orgId,
+            candidateId: candidate.id,
+            city: data.city,
+          }, { retryLimit: 2, retryDelay: 5 });
+        } catch {
+          // Jobs may be disabled — don't fail candidate creation
+          console.log("[candidate] geocoding job queue unavailable, skipping");
+        }
+      }
+
       return candidate;
     });
   },
 
   async update(orgId: string, id: string, data: UpdateCandidateInput) {
     return withTenantContext(orgId, async (tx) => {
+      // Check if city changed (for geocoding decision)
+      let cityChanged = false;
+      if (data.city !== undefined) {
+        const [existing] = await tx
+          .select({ city: candidates.city })
+          .from(candidates)
+          .where(eq(candidates.id, id));
+        cityChanged = existing?.city !== data.city;
+      }
+
       const [candidate] = await tx
         .update(candidates)
         .set({
@@ -148,6 +174,20 @@ export const candidateService = {
           actorId: candidate.firstName, // Will be overridden in route with actual userId
           metadata: { fields: Object.keys(data) },
         });
+
+        // Queue geocoding if city changed
+        if (cityChanged && data.city) {
+          try {
+            const boss = getJobQueue();
+            await boss.send("geo.geocode_candidate", {
+              orgId,
+              candidateId: id,
+              city: data.city,
+            });
+          } catch {
+            console.log("[candidate] geocoding job queue unavailable, skipping");
+          }
+        }
       }
 
       return candidate ?? null;
