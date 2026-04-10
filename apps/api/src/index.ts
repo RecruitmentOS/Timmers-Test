@@ -20,6 +20,9 @@ import { activityRoutes } from "./routes/activity.routes.js";
 import { reportRoutes } from "./routes/report.routes.js";
 import { portalRoutes } from "./routes/portal.routes.js";
 import { agentPortalRoutes } from "./routes/agent-portal.routes.js";
+import { driverQualificationRoutes } from "./routes/driver-qualification.routes.js";
+import { documentRoutes } from "./routes/document.routes.js";
+import { publicRoutes } from "./routes/public.routes.js";
 import type { AppEnv } from "./lib/app-env.js";
 import { startJobQueue } from "./lib/job-queue.js";
 import { registerJobHandlers } from "./jobs/job-handlers.js";
@@ -44,18 +47,21 @@ app.on(["POST", "GET"], "/api/auth/**", (c) => {
   return auth.handler(c.req.raw);
 });
 
-// Auth + tenant middleware on all /api/* routes (excluding /api/auth/*)
+// Mount public routes BEFORE auth middleware so they bypass authentication
+app.route("/api", publicRoutes);
+
+// Auth + tenant middleware on all /api/* routes (excluding /api/auth/* and /api/public/*)
 app.use("/api/*", async (c, next) => {
-  // Skip auth middleware for Better Auth routes
-  if (c.req.path.startsWith("/api/auth/")) {
+  // Skip auth middleware for Better Auth routes and public routes
+  if (c.req.path.startsWith("/api/auth/") || c.req.path.startsWith("/api/public/")) {
     return next();
   }
   return authMiddleware(c, next);
 });
 
 app.use("/api/*", async (c, next) => {
-  // Skip tenant middleware for Better Auth routes
-  if (c.req.path.startsWith("/api/auth/")) {
+  // Skip tenant middleware for Better Auth routes and public routes
+  if (c.req.path.startsWith("/api/auth/") || c.req.path.startsWith("/api/public/")) {
     return next();
   }
   return tenantMiddleware(c, next);
@@ -77,6 +83,8 @@ app.route("/api/activity", activityRoutes);
 app.route("/api/reports", reportRoutes);
 app.route("/api/portal", portalRoutes);
 app.route("/api/agent", agentPortalRoutes);
+app.route("/api/driver-qualifications", driverQualificationRoutes);
+app.route("/api/documents", documentRoutes);
 
 // Boot pg-boss job queue + register handlers before listening.
 // Gated by JOBS_ENABLED env var so dev can opt out.

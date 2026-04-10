@@ -10,8 +10,22 @@ import {
   MentionNotification,
   getSubject,
 } from "../emails/mention-notification.js";
+import { cvParseService } from "../services/cv-parse.service.js";
 
 type OverdueReminderData = { taskId: string; orgId: string };
+type DocumentExpiryReminderData = {
+  documentId: string;
+  candidateId: string;
+  orgId: string;
+  daysUntilExpiry: number;
+};
+type CvParseData = {
+  orgId: string;
+  fileId: string;
+  candidateId?: string;
+  s3Key: string;
+  contentHash?: string;
+};
 type SendNotificationEmailData = {
   mentionedUserIds: string[];
   commentId: string;
@@ -148,6 +162,36 @@ export async function registerJobHandlers(): Promise<void> {
           }
         }
       });
+    }
+  );
+
+  // Document expiry reminder — fires 30/14/7 days before a document expires.
+  // Phase 7 will wire this to transactional email; for now just log.
+  await boss.work<DocumentExpiryReminderData>(
+    "doc.expiry_reminder",
+    async ([job]: Job<DocumentExpiryReminderData>[]) => {
+      // MUST wrap DB work in withTenantContext — pg-boss runs outside Hono.
+      return withTenantContext(job.data.orgId, async () => {
+        console.log(
+          `[jobs] doc.expiry_reminder: document ${job.data.documentId} expires in ${job.data.daysUntilExpiry} days for candidate ${job.data.candidateId}`
+        );
+      });
+    }
+  );
+
+  // CV parse — sends PDF to Claude API for structured data extraction.
+  // Queued by cvParseService.triggerParse; retries 2x with 5s delay.
+  await boss.work<CvParseData>(
+    "cv.parse",
+    async ([job]: Job<CvParseData>[]) => {
+      const { orgId, fileId, s3Key, candidateId, contentHash } = job.data;
+      try {
+        await cvParseService.executeParse(orgId, fileId, s3Key, candidateId, contentHash);
+        console.log(`[jobs] cv.parse: completed for file ${fileId}`);
+      } catch (err) {
+        console.error(`[jobs] cv.parse: failed for file ${fileId}`, err);
+        throw err; // pg-boss will retry
+      }
     }
   );
 }
