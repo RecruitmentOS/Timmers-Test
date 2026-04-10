@@ -5,6 +5,11 @@ import { withTenantContext } from "../lib/with-tenant-context.js";
 import { tasks, comments } from "../db/schema/index.js";
 import { user } from "../db/schema/auth.js";
 import { getIO } from "../lib/socket.js";
+import { render } from "@react-email/components";
+import {
+  MentionNotification,
+  getSubject,
+} from "../emails/mention-notification.js";
 
 type OverdueReminderData = { taskId: string; orgId: string };
 type SendNotificationEmailData = {
@@ -103,21 +108,28 @@ export async function registerJobHandlers(): Promise<void> {
 
           if (!recipient) continue;
 
-          // Send email via Resend (or log if RESEND_API_KEY not set)
+          // Send email via Resend with React Email template
+          const lang = (recipient.language === "en" ? "en" : "nl") as "nl" | "en";
+          const authorName = author?.name ?? (lang === "en" ? "Someone" : "Iemand");
+          const subject = getSubject(authorName, lang);
+          const html = await render(
+            MentionNotification({
+              authorName,
+              commentBody: comment.body,
+              language: lang,
+            })
+          );
+
           if (process.env.RESEND_API_KEY) {
             try {
               const { Resend } = await import("resend");
               const resend = new Resend(process.env.RESEND_API_KEY);
-              const subject =
-                recipient.language === "en"
-                  ? `${author?.name ?? "Someone"} mentioned you in a comment`
-                  : `${author?.name ?? "Iemand"} heeft je genoemd in een reactie`;
 
               await resend.emails.send({
                 from: "Recruitment OS <noreply@recruitment-os.nl>",
                 to: recipient.email,
                 subject,
-                html: `<p>${subject}</p><blockquote>${comment.body.slice(0, 300)}</blockquote>`,
+                html,
               });
 
               console.log(
@@ -131,7 +143,7 @@ export async function registerJobHandlers(): Promise<void> {
             }
           } else {
             console.log(
-              `[jobs] send-notification-email: RESEND_API_KEY not set — would email ${recipient.email} about mention by ${author?.name}`
+              `[jobs] send-notification-email: RESEND_API_KEY not set — would email ${recipient.email} about mention by ${authorName}`
             );
           }
         }
