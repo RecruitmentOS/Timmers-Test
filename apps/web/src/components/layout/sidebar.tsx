@@ -34,16 +34,17 @@ type NavItem = {
   label: string;
   href: string;
   icon: React.ComponentType<{ className?: string }>;
+  tourId?: string;
 };
 
 const FULL_NAV: NavItem[] = [
-  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { label: "Vacancies", href: "/vacancies", icon: Briefcase },
-  { label: "Candidates", href: "/candidates", icon: Users },
+  { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, tourId: "tour-dashboard" },
+  { label: "Vacancies", href: "/vacancies", icon: Briefcase, tourId: "tour-vacatures" },
+  { label: "Candidates", href: "/candidates", icon: Users, tourId: "tour-kandidaten" },
   { label: "Taken", href: "/tasks", icon: ListChecks },
   { label: "Clients", href: "/clients", icon: Building2 },
   { label: "Rapportages", href: "/reports", icon: BarChart3 },
-  { label: "Settings", href: "/settings", icon: Settings },
+  { label: "Settings", href: "/settings", icon: Settings, tourId: "tour-instellingen" },
 ];
 
 const CLIENT_NAV: NavItem[] = [
@@ -106,7 +107,7 @@ export function AppSidebar({ variant = "full" }: { variant?: SidebarVariant }) {
               {items.map((item) => {
                 const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
                 return (
-                  <SidebarMenuItem key={item.href}>
+                  <SidebarMenuItem key={item.href} data-tour={item.tourId}>
                     <SidebarMenuButton
                       isActive={isActive}
                       tooltip={item.label}
