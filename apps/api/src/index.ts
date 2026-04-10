@@ -26,6 +26,7 @@ import { publicRoutes } from "./routes/public.routes.js";
 import { cvParseRoutes } from "./routes/cv-parse.routes.js";
 import { geocodingRoutes } from "./routes/geocoding.routes.js";
 import { onboardingRoutes } from "./routes/onboarding.routes.js";
+import { billingRoutes } from "./routes/billing.routes.js";
 import type { AppEnv } from "./lib/app-env.js";
 import { startJobQueue } from "./lib/job-queue.js";
 import { registerJobHandlers } from "./jobs/job-handlers.js";
@@ -55,16 +56,16 @@ app.route("/api", publicRoutes);
 
 // Auth + tenant middleware on all /api/* routes (excluding /api/auth/* and /api/public/*)
 app.use("/api/*", async (c, next) => {
-  // Skip auth middleware for Better Auth routes and public routes
-  if (c.req.path.startsWith("/api/auth/") || c.req.path.startsWith("/api/public/")) {
+  // Skip auth middleware for Better Auth routes, public routes, and billing webhook
+  if (c.req.path.startsWith("/api/auth/") || c.req.path.startsWith("/api/public/") || c.req.path === "/api/billing/webhook") {
     return next();
   }
   return authMiddleware(c, next);
 });
 
 app.use("/api/*", async (c, next) => {
-  // Skip tenant middleware for Better Auth routes and public routes
-  if (c.req.path.startsWith("/api/auth/") || c.req.path.startsWith("/api/public/")) {
+  // Skip tenant middleware for Better Auth routes, public routes, and billing webhook
+  if (c.req.path.startsWith("/api/auth/") || c.req.path.startsWith("/api/public/") || c.req.path === "/api/billing/webhook") {
     return next();
   }
   return tenantMiddleware(c, next);
@@ -91,6 +92,7 @@ app.route("/api/documents", documentRoutes);
 app.route("/api/cv-parse", cvParseRoutes);
 app.route("/api/geo", geocodingRoutes);
 app.route("/api/onboarding", onboardingRoutes);
+app.route("/api/billing", billingRoutes);
 
 // Boot pg-boss job queue + register handlers before listening.
 // Gated by JOBS_ENABLED env var so dev can opt out.

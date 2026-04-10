@@ -12,6 +12,7 @@ import {
 } from "../emails/mention-notification.js";
 import { cvParseService } from "../services/cv-parse.service.js";
 import { geocodingService } from "../services/geocoding.service.js";
+import { registerBillingJobs } from "./billing-jobs.js";
 
 type OverdueReminderData = { taskId: string; orgId: string };
 type GeocodeCandidateData = { orgId: string; candidateId: string; city: string };
@@ -232,4 +233,7 @@ export async function registerJobHandlers(): Promise<void> {
       }
     }
   );
+
+  // Register billing cron jobs (monthly metering, trial reminders)
+  await registerBillingJobs(boss);
 }
