@@ -37,7 +37,7 @@ export default function RegisterPage() {
         return;
       }
 
-      router.push("/login?registered=true");
+      router.push("/onboarding");
     } catch (err: any) {
       setError(err.message || "An unexpected error occurred");
       setLoading(false);
@@ -51,7 +51,7 @@ export default function RegisterPage() {
           Create your account
         </CardTitle>
         <CardDescription className="text-sm text-gray-500">
-          Enter your details to get started
+          Na registratie stel je je organisatie in
         </CardDescription>
       </CardHeader>
       <CardContent className="p-8 pt-6">
