@@ -121,6 +121,18 @@ CREATE POLICY "notifications_tenant_delete" ON "notifications" AS PERMISSIVE FOR
 -- notifications (per-user isolation policy — users can only see their own notifications)
 CREATE POLICY "notifications_user_isolation" ON "notifications" AS PERMISSIVE FOR SELECT TO "app_user" USING ("user_id" = current_setting('app.user_id', true)::text);
 
+-- driver_qualifications
+CREATE POLICY "driver_qualifications_tenant_select" ON "driver_qualifications" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "driver_qualifications_tenant_insert" ON "driver_qualifications" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "driver_qualifications_tenant_update" ON "driver_qualifications" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "driver_qualifications_tenant_delete" ON "driver_qualifications" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
+-- cv_parse_logs
+CREATE POLICY "cv_parse_logs_tenant_select" ON "cv_parse_logs" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "cv_parse_logs_tenant_insert" ON "cv_parse_logs" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "cv_parse_logs_tenant_update" ON "cv_parse_logs" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "cv_parse_logs_tenant_delete" ON "cv_parse_logs" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
 -- Step 3: Force RLS on all tenant-scoped tables (applies even to table owner)
 ALTER TABLE pipeline_stages FORCE ROW LEVEL SECURITY;
 ALTER TABLE clients FORCE ROW LEVEL SECURITY;
@@ -139,3 +151,9 @@ ALTER TABLE task_auto_rules FORCE ROW LEVEL SECURITY;
 ALTER TABLE application_tags FORCE ROW LEVEL SECURITY;
 ALTER TABLE comments FORCE ROW LEVEL SECURITY;
 ALTER TABLE notifications FORCE ROW LEVEL SECURITY;
+ALTER TABLE driver_qualifications FORCE ROW LEVEL SECURITY;
+ALTER TABLE cv_parse_logs FORCE ROW LEVEL SECURITY;
+
+-- Step 4: Grant access to app_user for new tables
+GRANT ALL ON driver_qualifications TO app_user;
+GRANT ALL ON cv_parse_logs TO app_user;

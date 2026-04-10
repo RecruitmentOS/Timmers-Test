@@ -2,6 +2,7 @@ import {
   pgTable,
   uuid,
   varchar,
+  numeric,
   timestamp,
 } from "drizzle-orm/pg-core";
 import { tenantRlsPolicies } from "./rls-helpers.js";
@@ -24,6 +25,9 @@ export const candidates = pgTable(
     email: varchar("email", { length: 255 }),
     city: varchar("city", { length: 255 }),
     source: varchar("source", { length: 100 }),
+    latitude: numeric("latitude", { precision: 10, scale: 7 }),
+    longitude: numeric("longitude", { precision: 10, scale: 7 }),
+    geocodedAt: timestamp("geocoded_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
     deletedAt: timestamp("deleted_at"),

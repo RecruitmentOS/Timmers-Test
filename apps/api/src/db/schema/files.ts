@@ -4,6 +4,7 @@ import {
   varchar,
   text,
   integer,
+  date,
   timestamp,
 } from "drizzle-orm/pg-core";
 import { tenantRlsPolicies } from "./rls-helpers.js";
@@ -26,6 +27,9 @@ export const fileMetadata = pgTable(
     contentType: varchar("content_type", { length: 100 }).notNull(),
     sizeBytes: integer("size_bytes"),
     s3Key: varchar("s3_key", { length: 500 }).notNull(),
+    documentType: varchar("document_type", { length: 20 }),
+    expiresAt: date("expires_at"),
+    contentHash: varchar("content_hash", { length: 64 }),
     uploadedBy: text("uploaded_by")
       .notNull()
       .references(() => user.id),

@@ -12,3 +12,5 @@ export * from "./tags.js";
 export * from "./tasks.js";
 export * from "./comments.js";
 export * from "./notifications.js";
+export * from "./driver-qualifications.js";
+export * from "./cv-parse-logs.js";
