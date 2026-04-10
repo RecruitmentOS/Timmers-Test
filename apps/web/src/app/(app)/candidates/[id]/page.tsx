@@ -12,6 +12,8 @@ import {
 import { useCreateApplication } from "@/hooks/use-applications";
 import { useVacancies } from "@/hooks/use-vacancies";
 import { apiClient } from "@/lib/api-client";
+import { CVParseReview } from "@/components/cv-parse/cv-parse-review";
+import { DocumentList } from "@/components/documents/document-list";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -53,6 +55,7 @@ export default function CandidateDetailPage() {
   const [selectedVacancyId, setSelectedVacancyId] = useState("");
   const [applyDialogOpen, setApplyDialogOpen] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [lastUploadedFileId, setLastUploadedFileId] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   if (isLoading) {
@@ -106,7 +109,7 @@ export default function CandidateDetailPage() {
       });
 
       // 3. Confirm upload (record metadata)
-      await apiClient("/api/files/confirm", {
+      const confirmed = await apiClient<{ id: string }>("/api/files/confirm", {
         method: "POST",
         body: JSON.stringify({
           entityType: "candidate",
@@ -117,6 +120,15 @@ export default function CandidateDetailPage() {
           s3Key: key,
         }),
       });
+
+      // 4. Trigger CV parse if it's a PDF
+      if (file.type === "application/pdf" && confirmed?.id) {
+        setLastUploadedFileId(confirmed.id);
+        await apiClient("/api/cv-parse/trigger", {
+          method: "POST",
+          body: JSON.stringify({ fileId: confirmed.id, candidateId: id, s3Key: key }),
+        });
+      }
 
       refetchFiles();
     } catch (err) {
@@ -244,6 +256,18 @@ export default function CandidateDetailPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* CV Parse Review Modal */}
+      {lastUploadedFileId && (
+        <CVParseReview
+          fileId={lastUploadedFileId}
+          candidateId={id}
+          onClose={() => setLastUploadedFileId(null)}
+        />
+      )}
+
+      {/* Typed Documents with Expiry */}
+      <DocumentList candidateId={id} />
 
       {/* Applications section */}
       <Card>

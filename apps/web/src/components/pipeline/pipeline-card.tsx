@@ -9,6 +9,8 @@
 
 import { useSortable } from "@dnd-kit/react/sortable";
 import type { PipelineCard as CardType } from "@/hooks/use-pipeline";
+import { LicenseBadges } from "@/components/driver/license-badges";
+import { DistanceBadge } from "@/components/geo/distance-badge";
 
 type Props = {
   application: CardType;
@@ -87,6 +89,14 @@ export function PipelineCard({
             <span className="w-1.5 h-1.5 rounded-full bg-rose-600" />
             overdue
           </span>
+        )}
+      </div>
+      <div className="flex items-center gap-1 mt-1 flex-wrap">
+        {application.licenseBadges && application.licenseBadges.length > 0 && (
+          <LicenseBadges badges={application.licenseBadges} compact />
+        )}
+        {application.distanceKm != null && (
+          <DistanceBadge distanceKm={application.distanceKm} size="sm" />
         )}
       </div>
     </button>
