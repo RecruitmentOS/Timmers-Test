@@ -24,6 +24,7 @@
     "better-auth": "^1.5",
     "dotenv": "^16",
     "drizzle-orm": "^0.45",
+    "facebook-nodejs-business-sdk": "^24.0.1",
     "hono": "^4",
     "pg-boss": "^12.15.0",
     "postgres": "^3",

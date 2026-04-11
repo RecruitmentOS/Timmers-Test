@@ -12,6 +12,7 @@ import { user } from "./auth.js";
 import { candidates } from "./candidates.js";
 import { vacancies } from "./vacancies.js";
 import { pipelineStages } from "./pipeline-stages.js";
+import { campaigns } from "./campaigns.js";
 
 /**
  * Qualification status enum for candidate applications.
@@ -51,7 +52,7 @@ export const candidateApplications = pgTable(
       .notNull()
       .default("pending"),
     sourceDetail: varchar("source_detail", { length: 255 }),
-    campaignId: uuid("campaign_id"),
+    campaignId: uuid("campaign_id").references(() => campaigns.id),
     assignedAgentId: text("assigned_agent_id").references(() => user.id),
     sentToClient: boolean("sent_to_client").notNull().default(false),
     sentToHiringManager: boolean("sent_to_hiring_manager")

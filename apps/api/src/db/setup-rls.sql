@@ -133,6 +133,30 @@ CREATE POLICY "cv_parse_logs_tenant_insert" ON "cv_parse_logs" AS PERMISSIVE FOR
 CREATE POLICY "cv_parse_logs_tenant_update" ON "cv_parse_logs" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
 CREATE POLICY "cv_parse_logs_tenant_delete" ON "cv_parse_logs" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
 
+-- campaigns
+CREATE POLICY "campaigns_tenant_select" ON "campaigns" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "campaigns_tenant_insert" ON "campaigns" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "campaigns_tenant_update" ON "campaigns" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "campaigns_tenant_delete" ON "campaigns" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
+-- targeting_templates
+CREATE POLICY "targeting_templates_tenant_select" ON "targeting_templates" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "targeting_templates_tenant_insert" ON "targeting_templates" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "targeting_templates_tenant_update" ON "targeting_templates" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "targeting_templates_tenant_delete" ON "targeting_templates" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
+-- persona_templates
+CREATE POLICY "persona_templates_tenant_select" ON "persona_templates" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "persona_templates_tenant_insert" ON "persona_templates" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "persona_templates_tenant_update" ON "persona_templates" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "persona_templates_tenant_delete" ON "persona_templates" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
+-- campaign_daily_metrics
+CREATE POLICY "campaign_daily_metrics_tenant_select" ON "campaign_daily_metrics" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "campaign_daily_metrics_tenant_insert" ON "campaign_daily_metrics" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "campaign_daily_metrics_tenant_update" ON "campaign_daily_metrics" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "campaign_daily_metrics_tenant_delete" ON "campaign_daily_metrics" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
 -- Step 3: Force RLS on all tenant-scoped tables (applies even to table owner)
 ALTER TABLE pipeline_stages FORCE ROW LEVEL SECURITY;
 ALTER TABLE clients FORCE ROW LEVEL SECURITY;
@@ -154,6 +178,16 @@ ALTER TABLE notifications FORCE ROW LEVEL SECURITY;
 ALTER TABLE driver_qualifications FORCE ROW LEVEL SECURITY;
 ALTER TABLE cv_parse_logs FORCE ROW LEVEL SECURITY;
 
+ALTER TABLE campaigns FORCE ROW LEVEL SECURITY;
+ALTER TABLE targeting_templates FORCE ROW LEVEL SECURITY;
+ALTER TABLE persona_templates FORCE ROW LEVEL SECURITY;
+ALTER TABLE campaign_daily_metrics FORCE ROW LEVEL SECURITY;
+
 -- Step 4: Grant access to app_user for new tables
 GRANT ALL ON driver_qualifications TO app_user;
 GRANT ALL ON cv_parse_logs TO app_user;
+GRANT ALL ON campaigns TO app_user;
+GRANT ALL ON targeting_templates TO app_user;
+GRANT ALL ON persona_templates TO app_user;
+GRANT ALL ON campaign_daily_metrics TO app_user;
+GRANT ALL ON meta_connections TO app_user;
