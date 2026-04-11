@@ -49,6 +49,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { MapPin, Calendar, UserPlus } from "lucide-react";
 import { PipelineBoard } from "@/components/pipeline/pipeline-board";
+import VacancyCampaignsPage from "./campaigns/page";
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-gray-100 text-gray-800",
@@ -222,14 +223,7 @@ export default function VacancyDetailPage() {
               </TooltipTrigger>
               <TooltipContent>Coming in Phase 2</TooltipContent>
             </Tooltip>
-            <Tooltip>
-              <TooltipTrigger render={<span />}>
-                <TabsTrigger value="campaigns" disabled>
-                  Campaigns
-                </TabsTrigger>
-              </TooltipTrigger>
-              <TooltipContent>Coming in Phase 4</TooltipContent>
-            </Tooltip>
+            <TabsTrigger value="campaigns">Campagnes</TabsTrigger>
             <Tooltip>
               <TooltipTrigger render={<span />}>
                 <TabsTrigger value="client-view" disabled>
@@ -335,6 +329,10 @@ export default function VacancyDetailPage() {
                 </div>
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="campaigns" className="mt-4">
+            <VacancyCampaignsPage />
           </TabsContent>
 
           <TabsContent value="pipeline" className="mt-4">
