@@ -13,6 +13,7 @@ export const RESOURCES = {
   comment: ["create", "read", "update", "delete"],
   notification: ["read", "update"],
   activity: ["read"],
+  campaign: ["create", "read", "update", "delete"],
 } as const;
 
 export type Resource = keyof typeof RESOURCES;

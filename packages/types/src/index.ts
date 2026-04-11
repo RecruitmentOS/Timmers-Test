@@ -28,3 +28,4 @@ export * from "./apply.js";
 export * from "./billing.js";
 export * from "./admin.js";
 export * from "./onboarding.js";
+export * from "./campaign.js";
