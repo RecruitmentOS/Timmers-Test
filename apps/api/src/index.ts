@@ -27,6 +27,9 @@ import { cvParseRoutes } from "./routes/cv-parse.routes.js";
 import { geocodingRoutes } from "./routes/geocoding.routes.js";
 import { onboardingRoutes } from "./routes/onboarding.routes.js";
 import { billingRoutes } from "./routes/billing.routes.js";
+import { campaignRoutes } from "./routes/campaign.routes.js";
+import { targetingTemplateRoutes } from "./routes/targeting-template.routes.js";
+import { personaTemplateRoutes } from "./routes/persona-template.routes.js";
 import type { AppEnv } from "./lib/app-env.js";
 import { startJobQueue } from "./lib/job-queue.js";
 import { registerJobHandlers } from "./jobs/job-handlers.js";
@@ -93,6 +96,9 @@ app.route("/api/cv-parse", cvParseRoutes);
 app.route("/api/geo", geocodingRoutes);
 app.route("/api/onboarding", onboardingRoutes);
 app.route("/api/billing", billingRoutes);
+app.route("/api/campaigns", campaignRoutes);
+app.route("/api/targeting-templates", targetingTemplateRoutes);
+app.route("/api/persona-templates", personaTemplateRoutes);
 
 // Boot pg-boss job queue + register handlers before listening.
 // Gated by JOBS_ENABLED env var so dev can opt out.

@@ -1,8 +1,9 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, or } from "drizzle-orm";
 import { withTenantContext } from "../lib/with-tenant-context.js";
 import {
   candidates,
   candidateApplications,
+  campaigns,
   pipelineStages,
   fileMetadata,
   activityLog,
@@ -115,6 +116,34 @@ export const applyService = {
           utmCampaign: input.utmCampaign ?? null,
         },
       });
+
+      // 6. UTM auto-linking (CAMP-03): link application to campaign if utmCampaign matches
+      if (input.utmCampaign) {
+        try {
+          const matchedCampaign = await tx
+            .select({ id: campaigns.id })
+            .from(campaigns)
+            .where(
+              and(
+                eq(campaigns.organizationId, orgId),
+                or(
+                  eq(campaigns.id, input.utmCampaign),
+                  eq(campaigns.name, input.utmCampaign)
+                )
+              )
+            );
+
+          if (matchedCampaign[0]) {
+            await tx
+              .update(candidateApplications)
+              .set({ campaignId: matchedCampaign[0].id })
+              .where(eq(candidateApplications.id, application.id));
+          }
+        } catch {
+          // Non-blocking enrichment: never fail the apply submission (research pitfall #4)
+          console.log("[apply] UTM campaign linking failed, continuing");
+        }
+      }
 
       return {
         candidateId: candidate.id,
