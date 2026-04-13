@@ -15,6 +15,7 @@ import { apiClient } from "@/lib/api-client";
 import { CVParseReview } from "@/components/cv-parse/cv-parse-review";
 import { DocumentList } from "@/components/documents/document-list";
 import { AIScreeningTrigger } from "../components/ai-screening-trigger";
+import { ScheduleInterview } from "../components/schedule-interview";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -310,7 +311,17 @@ export default function CandidateDetailPage() {
                       {new Date(app.createdAt).toLocaleDateString()}
                     </span>
                   </div>
-                  <AIScreeningTrigger applicationId={app.id} />
+                  <div className="flex items-center gap-2">
+                    <AIScreeningTrigger applicationId={app.id} />
+                    <ScheduleInterview
+                      applicationId={app.id}
+                      vacancyId={app.vacancyId}
+                      candidateId={id}
+                      candidateName={`${candidate.firstName} ${candidate.lastName}`}
+                      candidateEmail={candidate.email ?? undefined}
+                      vacancyTitle={app.vacancyTitle || "Vacancy"}
+                    />
+                  </div>
                 </div>
               ))}
             </div>

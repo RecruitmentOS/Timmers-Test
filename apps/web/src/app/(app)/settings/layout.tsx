@@ -9,6 +9,7 @@ import {
   GitBranch,
   ClipboardCheck,
   CreditCard,
+  Calendar,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMode } from "@/lib/use-mode";
@@ -20,6 +21,7 @@ const tabs = [
   { label: "Pipeline", href: "/settings/pipeline", icon: GitBranch },
   { label: "Kwalificaties", href: "/settings/qualifications", icon: ClipboardCheck },
   { label: "Facturatie", href: "/settings/billing", icon: CreditCard },
+  { label: "Agenda", href: "/settings/calendar", icon: Calendar },
 ];
 
 export default function SettingsLayout({

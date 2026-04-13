@@ -34,6 +34,7 @@ import { metaRoutes } from "./routes/meta.routes.js";
 import { aiScreeningRoutes } from "./routes/ai-screening.routes.js";
 import { linkedinRoutes } from "./routes/linkedin.routes.js";
 import { calendarRoutes } from "./routes/calendar.routes.js";
+import { interviewRoutes } from "./routes/interview.routes.js";
 import type { AppEnv } from "./lib/app-env.js";
 import { startJobQueue } from "./lib/job-queue.js";
 import { registerJobHandlers } from "./jobs/job-handlers.js";
@@ -107,6 +108,7 @@ app.route("/api/meta", metaRoutes);
 app.route("/api/ai-screening", aiScreeningRoutes);
 app.route("/api/linkedin", linkedinRoutes);
 app.route("/api/calendar", calendarRoutes);
+app.route("/api/interviews", interviewRoutes);
 
 // Boot pg-boss job queue + register handlers before listening.
 // Gated by JOBS_ENABLED env var so dev can opt out.
