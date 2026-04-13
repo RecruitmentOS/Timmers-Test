@@ -15,16 +15,24 @@ const ALLOWED_TYPES = [
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
+// S3-compatible endpoint: MinIO for local dev, R2 for production
+const s3Endpoint = process.env.S3_ENDPOINT
+  || (process.env.R2_ACCOUNT_ID
+    ? `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`
+    : undefined);
+
 const s3 = new S3Client({
-  region: "auto",
-  endpoint: `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`,
+  region: process.env.S3_REGION || "auto",
+  endpoint: s3Endpoint,
+  // forcePathStyle required for MinIO and other S3-compatible services
+  forcePathStyle: !!process.env.S3_ENDPOINT,
   credentials: {
-    accessKeyId: process.env.R2_ACCESS_KEY_ID!,
-    secretAccessKey: process.env.R2_SECRET_ACCESS_KEY!,
+    accessKeyId: process.env.S3_ACCESS_KEY_ID || process.env.R2_ACCESS_KEY_ID || "",
+    secretAccessKey: process.env.S3_SECRET_ACCESS_KEY || process.env.R2_SECRET_ACCESS_KEY || "",
   },
 });
 
-const BUCKET = process.env.R2_BUCKET_NAME || "recruitment-os";
+const BUCKET = process.env.S3_BUCKET_NAME || process.env.R2_BUCKET_NAME || "recruitment-os";
 
 export const fileService = {
   async getUploadUrl(
