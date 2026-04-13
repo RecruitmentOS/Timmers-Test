@@ -9,6 +9,8 @@
     "type-check": "tsc --noEmit",
     "db:push": "drizzle-kit push && psql $DATABASE_URL -f src/db/setup-rls.sql",
     "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx src/db/migrate.ts",
+    "db:migrate:generate": "drizzle-kit generate",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx src/db/seed/index.ts"
   },
