@@ -22,6 +22,8 @@ import { useIsEmployer } from "@/lib/use-mode";
 import { PipelineColumn } from "./pipeline-column";
 import { QualificationDrawer } from "@/components/qualification/qualification-drawer";
 import { usePipelineSync } from "@/hooks/use-socket";
+import { useLiveCursors } from "@/hooks/use-live-cursors";
+import { LiveCursorsLayer } from "./live-cursors-layer";
 
 type Props = {
   vacancyId: string;
@@ -39,6 +41,8 @@ export function PipelineBoard({ vacancyId, filters, compact }: Props) {
   const isEmployer = useIsEmployer();
   // Realtime: subscribe to pipeline updates from other users
   usePipelineSync(vacancyId);
+  // Live cursors: show other users' cursor positions
+  const { cursors, containerRef, emitMove } = useLiveCursors(vacancyId);
   const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
 
   if (isLoading || !board) {
@@ -75,12 +79,14 @@ export function PipelineBoard({ vacancyId, filters, compact }: Props) {
         }}
       >
         <div
+          ref={containerRef}
           className={
             compact
-              ? "flex gap-3 overflow-x-auto p-3 max-h-[400px]"
-              : "flex gap-4 overflow-x-auto p-4 min-h-[70vh]"
+              ? "relative flex gap-3 overflow-x-auto p-3 max-h-[400px]"
+              : "relative flex gap-4 overflow-x-auto p-4 min-h-[70vh]"
           }
           data-testid="pipeline-board"
+          onMouseMove={(e) => emitMove(e.nativeEvent)}
         >
           {board.stages.map((stage) => (
             <PipelineColumn
@@ -94,6 +100,7 @@ export function PipelineBoard({ vacancyId, filters, compact }: Props) {
               onCardClick={setSelectedCard}
             />
           ))}
+          {cursors.size > 0 && <LiveCursorsLayer cursors={cursors} />}
         </div>
       </DragDropProvider>
       <QualificationDrawer

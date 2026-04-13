@@ -100,11 +100,34 @@ export function initSocketIO(httpServer: ServerType): Server {
       });
     });
 
-    // On disconnecting: broadcast presence:leave for all vacancy rooms
+    // ── Live cursors ───────────────────────────────────────────────
+    socket.on(
+      "cursor:move",
+      (data: { vacancyId: string; x: number; y: number; cardId?: string }) => {
+        socket
+          .to(`vacancy:${data.vacancyId}`)
+          .emit("cursor:update", {
+            userId,
+            userName,
+            x: data.x,
+            y: data.y,
+            cardId: data.cardId,
+          });
+      }
+    );
+
+    socket.on("cursor:leave", (data: { vacancyId: string }) => {
+      socket
+        .to(`vacancy:${data.vacancyId}`)
+        .emit("cursor:remove", { userId });
+    });
+
+    // On disconnecting: broadcast presence:leave + cursor:remove for all vacancy rooms
     socket.on("disconnecting", () => {
       for (const room of socket.rooms) {
         if (room.startsWith("vacancy:")) {
           socket.to(room).emit("presence:leave", { userId, userName });
+          socket.to(room).emit("cursor:remove", { userId });
         }
       }
     });
