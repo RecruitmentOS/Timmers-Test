@@ -29,3 +29,6 @@ export * from "./billing.js";
 export * from "./admin.js";
 export * from "./onboarding.js";
 export * from "./campaign.js";
+export * from "./ai-screening.js";
+export * from "./calendar.js";
+export * from "./email-templates.js";
