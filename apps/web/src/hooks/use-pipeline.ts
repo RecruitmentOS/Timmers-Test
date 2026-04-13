@@ -28,6 +28,8 @@ export type PipelineCard = {
   lastName: string | null;
   source: string | null;
   hasOverdueTask: boolean;
+  aiVerdict?: "yes" | "maybe" | "no" | null;
+  aiConfidence?: number | null;
 };
 
 export type PipelineStage = {

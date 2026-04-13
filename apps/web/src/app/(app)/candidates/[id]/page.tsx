@@ -14,6 +14,7 @@ import { useVacancies } from "@/hooks/use-vacancies";
 import { apiClient } from "@/lib/api-client";
 import { CVParseReview } from "@/components/cv-parse/cv-parse-review";
 import { DocumentList } from "@/components/documents/document-list";
+import { AIScreeningTrigger } from "../components/ai-screening-trigger";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -284,29 +285,32 @@ export default function CandidateDetailPage() {
               {(applications as any[]).map((app: any) => (
                 <div
                   key={app.id}
-                  className="flex items-center justify-between border-b pb-2 last:border-0"
+                  className="border-b pb-3 last:border-0 space-y-2"
                 >
-                  <div>
-                    <Link
-                      href={`/vacancies/${app.vacancyId}`}
-                      className="font-medium hover:underline"
-                    >
-                      {app.vacancyTitle || "Vacancy"}
-                    </Link>
-                    <div className="flex items-center gap-2 mt-1">
-                      <Badge variant="secondary">
-                        {app.qualificationStatus}
-                      </Badge>
-                      {app.vacancyStatus && (
-                        <span className="text-xs text-muted-foreground">
-                          {app.vacancyStatus}
-                        </span>
-                      )}
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Link
+                        href={`/vacancies/${app.vacancyId}`}
+                        className="font-medium hover:underline"
+                      >
+                        {app.vacancyTitle || "Vacancy"}
+                      </Link>
+                      <div className="flex items-center gap-2 mt-1">
+                        <Badge variant="secondary">
+                          {app.qualificationStatus}
+                        </Badge>
+                        {app.vacancyStatus && (
+                          <span className="text-xs text-muted-foreground">
+                            {app.vacancyStatus}
+                          </span>
+                        )}
+                      </div>
                     </div>
+                    <span className="text-xs text-muted-foreground">
+                      {new Date(app.createdAt).toLocaleDateString()}
+                    </span>
                   </div>
-                  <span className="text-xs text-muted-foreground">
-                    {new Date(app.createdAt).toLocaleDateString()}
-                  </span>
+                  <AIScreeningTrigger applicationId={app.id} />
                 </div>
               ))}
             </div>

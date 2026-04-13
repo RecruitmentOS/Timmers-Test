@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { useOrgSettings, useUpdateOrgSettings } from "@/hooks/use-admin";
 import { useProductTour } from "@/hooks/use-product-tour";
+import { AIUsageSection } from "./ai-usage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -106,6 +107,8 @@ export default function GeneralSettingsPage() {
           </form>
         </CardContent>
       </Card>
+
+      <AIUsageSection />
 
       <Card>
         <CardHeader>

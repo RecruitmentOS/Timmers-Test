@@ -11,6 +11,7 @@ import { useSortable } from "@dnd-kit/react/sortable";
 import type { PipelineCard as CardType } from "@/hooks/use-pipeline";
 import { LicenseBadges } from "@/components/driver/license-badges";
 import { DistanceBadge } from "@/components/geo/distance-badge";
+import { AIScreeningBadge } from "@/app/(app)/candidates/components/ai-screening-badge";
 
 type Props = {
   application: CardType;
@@ -67,13 +68,21 @@ export function PipelineCard({
         <span className="text-sm font-medium text-slate-800 truncate">
           {name}
         </span>
-        <span
-          className={`inline-block w-2 h-2 rounded-full shrink-0 ${
-            QUAL_DOT[application.qualificationStatus]
-          }`}
-          title={QUAL_LABEL[application.qualificationStatus]}
-          aria-label={QUAL_LABEL[application.qualificationStatus]}
-        />
+        <div className="flex items-center gap-1 shrink-0">
+          {application.aiVerdict && (
+            <AIScreeningBadge
+              verdict={application.aiVerdict}
+              confidence={application.aiConfidence ?? undefined}
+            />
+          )}
+          <span
+            className={`inline-block w-2 h-2 rounded-full ${
+              QUAL_DOT[application.qualificationStatus]
+            }`}
+            title={QUAL_LABEL[application.qualificationStatus]}
+            aria-label={QUAL_LABEL[application.qualificationStatus]}
+          />
+        </div>
       </div>
       <div className="flex items-center gap-2 mt-1 text-xs text-slate-500">
         {application.source && (
