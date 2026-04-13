@@ -1,0 +1,8 @@
+[build]
+dockerfilePath = "apps/web/Dockerfile"
+watchPatterns = ["apps/web/**", "packages/**", "pnpm-lock.yaml"]
+
+[deploy]
+healthcheckPath = "/"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"

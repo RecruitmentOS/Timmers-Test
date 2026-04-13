@@ -1,0 +1,11 @@
+[build]
+dockerfilePath = "apps/api/Dockerfile"
+watchPatterns = ["apps/api/**", "packages/**", "pnpm-lock.yaml"]
+
+[deploy]
+healthcheckPath = "/health"
+healthcheckTimeout = 30
+restartPolicyType = "ON_FAILURE"
+
+[deploy.predeploy]
+command = "cd apps/api && npx tsx src/db/migrate.ts"
