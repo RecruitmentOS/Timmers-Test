@@ -1,0 +1,26 @@
+FROM node:22-alpine
+
+# Enable corepack and prepare pnpm
+RUN corepack enable && corepack prepare pnpm@10 --activate
+
+WORKDIR /app
+
+# Copy workspace root config files
+COPY pnpm-lock.yaml pnpm-workspace.yaml package.json tsconfig.base.json turbo.json ./
+
+# Copy package.json for each workspace package (for dependency resolution)
+COPY apps/web/package.json apps/web/
+COPY packages/types/package.json packages/types/
+COPY packages/permissions/package.json packages/permissions/
+
+# Install dependencies
+RUN pnpm install --frozen-lockfile
+
+# Copy source files (packages first, then app)
+COPY packages/ packages/
+COPY apps/web/ apps/web/
+
+# Note: apps/web/src is volume-mounted in docker-compose for hot-reload
+EXPOSE 3002
+
+CMD ["pnpm", "--filter", "@recruitment-os/web", "dev"]
