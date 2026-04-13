@@ -24,6 +24,8 @@ import { QualificationDrawer } from "@/components/qualification/qualification-dr
 import { usePipelineSync } from "@/hooks/use-socket";
 import { useLiveCursors } from "@/hooks/use-live-cursors";
 import { LiveCursorsLayer } from "./live-cursors-layer";
+import { EmptyState } from "@/components/empty-state";
+import { Columns3 } from "lucide-react";
 
 type Props = {
   vacancyId: string;
@@ -56,6 +58,21 @@ export function PipelineBoard({ vacancyId, filters, compact }: Props) {
       <div className="p-8 text-sm text-rose-600">
         Kon pipeline niet laden: {(error as Error).message}
       </div>
+    );
+  }
+
+  const totalApplications = board.stages.reduce(
+    (sum, s) => sum + s.applications.length,
+    0
+  );
+
+  if (totalApplications === 0) {
+    return (
+      <EmptyState
+        icon={<Columns3 />}
+        title="Geen kandidaten in deze pipeline"
+        description="Voeg kandidaten toe aan deze vacature"
+      />
     );
   }
 

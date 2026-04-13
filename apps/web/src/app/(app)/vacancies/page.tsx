@@ -23,7 +23,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, MapPin } from "lucide-react";
+import { Plus, MapPin, Briefcase } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-gray-100 text-gray-800",
@@ -92,25 +93,24 @@ export default function VacanciesPage() {
           ))}
         </div>
       ) : !vacancies?.length ? (
-        <div className="text-center py-12 text-muted-foreground">
-          <p className="text-lg">No vacancies found</p>
-          <p className="mt-1">Create your first vacancy to get started.</p>
-          <Link href="/vacancies/new" className="mt-4 inline-block">
-            <Button variant="outline">
-              <Plus className="mr-2 h-4 w-4" />
-              Create Vacancy
-            </Button>
-          </Link>
-        </div>
+        <EmptyState
+          icon={<Briefcase />}
+          title="Nog geen vacatures"
+          description="Maak je eerste vacature aan om kandidaten te werven"
+          action={{
+            label: "Vacature aanmaken",
+            onClick: () => (window.location.href = "/vacancies/new"),
+          }}
+        />
       ) : (
         <Table>
           <TableHeader>
             <TableRow>
               <TableHead>Title</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Created</TableHead>
+              <TableHead className="hidden sm:table-cell">Location</TableHead>
+              <TableHead className="hidden md:table-cell">Type</TableHead>
+              <TableHead className="hidden md:table-cell">Created</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -132,7 +132,7 @@ export default function VacanciesPage() {
                     {v.status}
                   </Badge>
                 </TableCell>
-                <TableCell>
+                <TableCell className="hidden sm:table-cell">
                   {v.location && (
                     <span className="flex items-center gap-1 text-muted-foreground">
                       <MapPin className="h-3 w-3" />
@@ -140,10 +140,10 @@ export default function VacanciesPage() {
                     </span>
                   )}
                 </TableCell>
-                <TableCell className="text-muted-foreground">
+                <TableCell className="hidden md:table-cell text-muted-foreground">
                   {v.employmentType || "-"}
                 </TableCell>
-                <TableCell className="text-muted-foreground">
+                <TableCell className="hidden md:table-cell text-muted-foreground">
                   {new Date(v.createdAt).toLocaleDateString()}
                 </TableCell>
               </TableRow>

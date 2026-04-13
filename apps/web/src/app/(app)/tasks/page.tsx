@@ -2,8 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { useQueryState } from "nuqs";
-import { Plus } from "lucide-react";
+import { Plus, CheckSquare } from "lucide-react";
 import type { Task, TaskFilters, TaskStatus } from "@recruitment-os/types";
+import { EmptyState } from "@/components/empty-state";
 import { Button } from "@/components/ui/button";
 import {
   useTasks,
@@ -151,15 +152,23 @@ export default function TasksPage() {
         </div>
       </div>
 
-      <TaskList
-        tasks={tasks}
-        isLoading={isLoading}
-        error={error}
-        onRetry={() => refetch()}
-        onComplete={handleComplete}
-        onEdit={handleEdit}
-        onDelete={handleDelete}
-      />
+      {!isLoading && !error && tasks.length === 0 ? (
+        <EmptyState
+          icon={<CheckSquare />}
+          title="Geen taken"
+          description="Je hebt geen openstaande taken"
+        />
+      ) : (
+        <TaskList
+          tasks={tasks}
+          isLoading={isLoading}
+          error={error}
+          onRetry={() => refetch()}
+          onComplete={handleComplete}
+          onEdit={handleEdit}
+          onDelete={handleDelete}
+        />
+      )}
     </div>
   );
 }

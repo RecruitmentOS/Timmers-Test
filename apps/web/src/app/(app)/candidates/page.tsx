@@ -22,7 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Search } from "lucide-react";
+import { Search, Users } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 import { useVacancies } from "@/hooks/use-vacancies";
 import type { BulkFilter } from "@recruitment-os/types";
 
@@ -222,6 +223,15 @@ export default function CandidatesPage() {
           isAllMatchingSelected={isAllMatchingSelected}
           onSelectAllMatching={() => setIsAllMatchingSelected(true)}
           onClearSelection={clearSelection}
+        />
+      )}
+
+      {/* Empty state when no candidates */}
+      {!isLoading && rows.length === 0 && (
+        <EmptyState
+          icon={<Users />}
+          title="Nog geen kandidaten"
+          description="Kandidaten verschijnen hier zodra ze solliciteren of worden toegevoegd"
         />
       )}
 

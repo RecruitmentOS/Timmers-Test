@@ -7,6 +7,7 @@
  * rule — see pipeline-board.tsx header).
  */
 
+import { memo } from "react";
 import { useSortable } from "@dnd-kit/react/sortable";
 import type { PipelineCard as CardType } from "@/hooks/use-pipeline";
 import { LicenseBadges } from "@/components/driver/license-badges";
@@ -34,7 +35,7 @@ const QUAL_LABEL: Record<CardType["qualificationStatus"], string> = {
   no: "Afgewezen",
 };
 
-export function PipelineCard({
+export const PipelineCard = memo(function PipelineCard({
   application,
   columnId,
   index,
@@ -110,4 +111,4 @@ export function PipelineCard({
       </div>
     </button>
   );
-}
+});

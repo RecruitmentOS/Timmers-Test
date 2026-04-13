@@ -42,7 +42,7 @@ export function PipelineColumn({
       ref={ref as unknown as React.Ref<HTMLDivElement>}
       data-stage-id={stage.id}
       data-testid={`pipeline-column-${stage.id}`}
-      className={`flex flex-col gap-2 w-72 shrink-0 rounded p-2 border transition-colors ${
+      className={`flex flex-col gap-2 w-72 min-w-[280px] shrink-0 rounded p-2 border transition-colors ${
         isDropTarget
           ? "bg-blue-50 border-blue-300"
           : "bg-slate-50 border-slate-200"

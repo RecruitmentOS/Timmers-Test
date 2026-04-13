@@ -18,6 +18,8 @@ import {
 } from "@/components/ui/select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Megaphone } from "lucide-react";
+import { EmptyState } from "@/components/empty-state";
 
 const CHANNEL_OPTIONS: { value: string; label: string }[] = [
   { value: "all", label: "Alle kanalen" },
@@ -67,7 +69,7 @@ export default function CampaignsPage() {
         <CampaignForm vacancyId="" />
       </div>
 
-      <div className="grid grid-cols-[350px_1fr] gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-[350px_1fr] gap-6">
         {/* Left panel - campaign list with filters */}
         <div className="space-y-4">
           <div className="grid grid-cols-2 gap-2">
@@ -113,6 +115,12 @@ export default function CampaignsPage() {
             <CardContent className="p-0">
               {isLoading ? (
                 <p className="text-sm text-muted-foreground p-4">Laden...</p>
+              ) : campaigns.length === 0 ? (
+                <EmptyState
+                  icon={<Megaphone />}
+                  title="Nog geen campagnes"
+                  description="Maak een campagne aan om vacatures te promoten"
+                />
               ) : (
                 <CampaignList
                   campaigns={campaigns}
