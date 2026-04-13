@@ -46,7 +46,14 @@ const app = new Hono<AppEnv>();
 app.use(
   "*",
   cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:3002",
+    origin: (origin, c) => {
+      if (!origin) return process.env.FRONTEND_URL || "http://localhost:3002";
+      const allowed =
+        /^https:\/\/[\w-]+\.recruitment-os\.nl$/.test(origin) ||
+        /^http:\/\/[\w-]+\.localhost:3002$/.test(origin) ||
+        origin === (process.env.FRONTEND_URL || "http://localhost:3002");
+      return allowed ? origin : null;
+    },
     credentials: true,
   })
 );

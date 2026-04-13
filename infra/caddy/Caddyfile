@@ -1,0 +1,19 @@
+*.recruitment-os.nl, recruitment-os.nl {
+	tls {
+		dns cloudflare {env.CLOUDFLARE_API_TOKEN}
+	}
+
+	@api path /api/* /health /feed/*
+	handle @api {
+		reverse_proxy api:4000
+	}
+
+	@socket path /socket.io/*
+	handle @socket {
+		reverse_proxy api:4000
+	}
+
+	handle {
+		reverse_proxy web:3002
+	}
+}

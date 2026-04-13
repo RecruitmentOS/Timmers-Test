@@ -28,7 +28,14 @@ interface SocketData {
 export function initSocketIO(httpServer: ServerType): Server {
   io = new Server(httpServer as HttpServer, {
     cors: {
-      origin: process.env.FRONTEND_URL || "http://localhost:3002",
+      origin: (origin: string | undefined, callback: (err: Error | null, allow?: string) => void) => {
+        if (!origin) return callback(null, process.env.FRONTEND_URL || "http://localhost:3002");
+        const allowed =
+          /^https:\/\/[\w-]+\.recruitment-os\.nl$/.test(origin) ||
+          /^http:\/\/[\w-]+\.localhost:3002$/.test(origin) ||
+          origin === (process.env.FRONTEND_URL || "http://localhost:3002");
+        callback(null, allowed ? origin : undefined);
+      },
       credentials: true,
     },
     connectionStateRecovery: {
