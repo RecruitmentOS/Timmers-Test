@@ -32,6 +32,8 @@ import { targetingTemplateRoutes } from "./routes/targeting-template.routes.js";
 import { personaTemplateRoutes } from "./routes/persona-template.routes.js";
 import { metaRoutes } from "./routes/meta.routes.js";
 import { aiScreeningRoutes } from "./routes/ai-screening.routes.js";
+import { linkedinRoutes } from "./routes/linkedin.routes.js";
+import { calendarRoutes } from "./routes/calendar.routes.js";
 import type { AppEnv } from "./lib/app-env.js";
 import { startJobQueue } from "./lib/job-queue.js";
 import { registerJobHandlers } from "./jobs/job-handlers.js";
@@ -103,6 +105,8 @@ app.route("/api/targeting-templates", targetingTemplateRoutes);
 app.route("/api/persona-templates", personaTemplateRoutes);
 app.route("/api/meta", metaRoutes);
 app.route("/api/ai-screening", aiScreeningRoutes);
+app.route("/api/linkedin", linkedinRoutes);
+app.route("/api/calendar", calendarRoutes);
 
 // Boot pg-boss job queue + register handlers before listening.
 // Gated by JOBS_ENABLED env var so dev can opt out.

@@ -14,6 +14,8 @@ export const RESOURCES = {
   notification: ["read", "update"],
   activity: ["read"],
   campaign: ["create", "read", "update", "delete"],
+  calendar: ["create", "read", "delete"],
+  interview: ["create", "read", "update", "delete"],
 } as const;
 
 export type Resource = keyof typeof RESOURCES;
