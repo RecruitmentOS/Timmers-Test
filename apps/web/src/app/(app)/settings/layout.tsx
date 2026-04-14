@@ -10,6 +10,7 @@ import {
   ClipboardCheck,
   CreditCard,
   Calendar,
+  Bell,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useMode } from "@/lib/use-mode";
@@ -22,6 +23,7 @@ const tabs = [
   { label: "Kwalificaties", href: "/settings/qualifications", icon: ClipboardCheck },
   { label: "Facturatie", href: "/settings/billing", icon: CreditCard },
   { label: "Agenda", href: "/settings/calendar", icon: Calendar },
+  { label: "Meldingen", href: "/settings/notifications", icon: Bell },
 ];
 
 export default function SettingsLayout({
