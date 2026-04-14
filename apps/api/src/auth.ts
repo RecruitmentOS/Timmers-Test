@@ -4,6 +4,7 @@ import { magicLink } from "better-auth/plugins";
 import { createAccessControl } from "better-auth/plugins/access";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "./db/index.js";
+import { emailService } from "./services/email.service.js";
 
 // Define permission statements matching the resources
 // MUST stay in lockstep with packages/permissions/src/resources.ts
@@ -101,6 +102,13 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
+    sendResetPassword: async ({ user, url }) => {
+      await emailService.sendPasswordReset(user.email, {
+        name: user.name || user.email,
+        resetUrl: url,
+        language: "nl",
+      });
+    },
   },
   plugins: [
     organization({
@@ -114,12 +122,28 @@ export const auth = betterAuth({
         client_viewer: clientViewer,
         marketing_op: marketingOp,
       },
+      sendInvitationEmail: async (data) => {
+        const invitation = data.invitation;
+        const inviter = data.inviter;
+        const acceptUrl = `${process.env.FRONTEND_URL || "http://localhost:3002"}/accept-invite?token=${invitation.id}`;
+        await emailService.sendTeamInvite(invitation.email, {
+          name: invitation.email,
+          orgName: data.organization?.name || "your team",
+          inviterName: inviter?.user?.name || inviter?.user?.email || "A team member",
+          acceptUrl,
+          role: invitation.role,
+          language: "nl",
+        });
+      },
     }),
     magicLink({
       sendMagicLink: async ({ email, url }) => {
-        // In production, send via Resend/SMTP
-        // For development, log the magic link URL to console
-        console.log(`[Magic Link] Send to ${email}: ${url}`);
+        await emailService.sendMagicLink(email, {
+          name: email,
+          orgName: "Recruitment OS",
+          magicLinkUrl: url,
+          language: "nl",
+        });
       },
       expiresIn: 600, // 10 minutes
     }),
