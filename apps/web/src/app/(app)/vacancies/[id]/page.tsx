@@ -185,6 +185,12 @@ export default function VacancyDetailPage() {
                 <span className="text-muted-foreground">Updated</span>
                 <p>{new Date(vacancy.updatedAt).toLocaleDateString()}</p>
               </div>
+              {vacancy.hourlyRate && (
+                <div>
+                  <span className="text-muted-foreground">Uurtarief</span>
+                  <p className="font-medium">&euro; {Number(vacancy.hourlyRate).toFixed(2)}</p>
+                </div>
+              )}
             </div>
           </div>
         </CardContent>

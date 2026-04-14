@@ -210,6 +210,51 @@ export default function CandidateDetailPage() {
         </CardContent>
       </Card>
 
+      {/* Beschikbaarheid & Contract */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base">Beschikbaarheid & Contract</CardTitle>
+        </CardHeader>
+        <CardContent>
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
+            <div>
+              <span className="text-muted-foreground">Beschikbaarheid</span>
+              <p className="mt-1 font-medium">
+                {candidate.availabilityType === "direct"
+                  ? "Direct beschikbaar"
+                  : candidate.availabilityType === "opzegtermijn"
+                    ? "Opzegtermijn"
+                    : candidate.availabilityType === "in_overleg"
+                      ? "In overleg"
+                      : "Niet opgegeven"}
+              </p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Start datum</span>
+              <p className="mt-1 font-medium">
+                {candidate.availabilityStartDate
+                  ? new Date(candidate.availabilityStartDate).toLocaleDateString("nl-NL")
+                  : "Niet opgegeven"}
+              </p>
+            </div>
+            <div>
+              <span className="text-muted-foreground">Contract type</span>
+              <p className="mt-1 font-medium">
+                {candidate.contractType === "vast"
+                  ? "Vast dienstverband"
+                  : candidate.contractType === "tijdelijk"
+                    ? "Tijdelijk contract"
+                    : candidate.contractType === "uitzend"
+                      ? "Uitzendovereenkomst"
+                      : candidate.contractType === "zzp"
+                        ? "ZZP / Freelance"
+                        : "Niet opgegeven"}
+              </p>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* CV / Documents section */}
       <Card>
         <CardHeader>

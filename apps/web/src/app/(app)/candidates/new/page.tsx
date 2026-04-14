@@ -15,6 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Separator } from "@/components/ui/separator";
 import Link from "next/link";
 
 export default function NewCandidatePage() {
@@ -25,10 +26,17 @@ export default function NewCandidatePage() {
     register,
     handleSubmit,
     setValue,
+    watch,
     formState: { errors, isSubmitting },
   } = useForm<CreateCandidateInput>();
 
+  const availabilityType = watch("availabilityType");
+
   const onSubmit = async (data: CreateCandidateInput) => {
+    // Pre-fill today's date for "direct" if no start date specified
+    if (data.availabilityType === "direct" && !data.availabilityStartDate) {
+      data.availabilityStartDate = new Date().toISOString().split("T")[0];
+    }
     const result = await createMutation.mutateAsync(data);
     router.push(`/candidates/${result.id}`);
   };
@@ -123,6 +131,69 @@ export default function NewCandidatePage() {
                     <SelectItem value="other">Other</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* Transport Details: Beschikbaarheid & Contract */}
+            <div>
+              <h3 className="text-sm font-semibold text-slate-700 mb-3">
+                Beschikbaarheid & Contract
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label>Beschikbaarheid</Label>
+                  <Select
+                    onValueChange={(val) =>
+                      val && setValue("availabilityType", val as CreateCandidateInput["availabilityType"])
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecteer beschikbaarheid" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="direct">Direct beschikbaar</SelectItem>
+                      <SelectItem value="opzegtermijn">Opzegtermijn</SelectItem>
+                      <SelectItem value="in_overleg">In overleg</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="availabilityStartDate">Start datum</Label>
+                  <Input
+                    id="availabilityStartDate"
+                    type="date"
+                    {...register("availabilityStartDate")}
+                    defaultValue={
+                      availabilityType === "direct"
+                        ? new Date().toISOString().split("T")[0]
+                        : undefined
+                    }
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 mt-4">
+                <div className="space-y-2">
+                  <Label>Contract type</Label>
+                  <Select
+                    onValueChange={(val) =>
+                      val && setValue("contractType", val as CreateCandidateInput["contractType"])
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecteer contract type" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="vast">Vast dienstverband</SelectItem>
+                      <SelectItem value="tijdelijk">Tijdelijk contract</SelectItem>
+                      <SelectItem value="uitzend">Uitzendovereenkomst</SelectItem>
+                      <SelectItem value="zzp">ZZP / Freelance</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
             </div>
 

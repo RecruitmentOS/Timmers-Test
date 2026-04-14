@@ -96,20 +96,41 @@ export default function NewVacancyPage() {
               </div>
             </div>
 
-            <div className="space-y-2">
-              <Label>Client</Label>
-              <Select onValueChange={(val) => val && setValue("clientId", val as string)}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select client (optional)" />
-                </SelectTrigger>
-                <SelectContent>
-                  {clients?.map((c) => (
-                    <SelectItem key={c.id} value={c.id}>
-                      {c.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label>Client</Label>
+                <Select onValueChange={(val) => val && setValue("clientId", val as string)}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Select client (optional)" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {clients?.map((c) => (
+                      <SelectItem key={c.id} value={c.id}>
+                        {c.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {/* Hourly rate — shown always; TODO(01-04): conditionally render for agency mode only once mode flag is available */}
+              <div className="space-y-2">
+                <Label htmlFor="hourlyRate">Uurtarief (EUR)</Label>
+                <div className="relative">
+                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">
+                    &euro;
+                  </span>
+                  <Input
+                    id="hourlyRate"
+                    type="number"
+                    step="0.01"
+                    min="0"
+                    className="pl-7"
+                    {...register("hourlyRate", { valueAsNumber: true })}
+                    placeholder="22.50"
+                  />
+                </div>
+              </div>
             </div>
 
             <div className="flex gap-3 pt-4">

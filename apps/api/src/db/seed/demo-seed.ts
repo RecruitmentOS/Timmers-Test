@@ -15,6 +15,7 @@ import { candidateApplications } from "../schema/applications.js";
 import { tasks } from "../schema/tasks.js";
 import { qualificationPresets } from "../schema/qualification-presets.js";
 import { driverQualifications } from "../schema/driver-qualifications.js";
+import { placements } from "../schema/applications.js";
 import { withTenantContext } from "../../lib/with-tenant-context.js";
 
 // Fixed UUIDs for demo orgs
@@ -203,21 +204,24 @@ async function seedEmployerOrg(demoUserId: string): Promise<void> {
         status: "paused",
         ownerId: demoUserId,
         requiredLicenses: JSON.stringify(["CE", "code95", "ADR"]),
+        hourlyRate: "20.00",
       })
       .returning();
 
     console.log("  Created 3 vacancies");
 
-    // 8 candidates with realistic Dutch transport names
+    // 8 candidates with realistic Dutch transport names + transport fields
+    const today = new Date().toISOString().split("T")[0];
+    const twoWeeksOut = new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0];
     const candidateData = [
-      { firstName: "Jan", lastName: "de Vries", city: "Amsterdam", source: "indeed" as const },
-      { firstName: "Piet", lastName: "Bakker", city: "Rotterdam", source: "marktplaats" as const },
-      { firstName: "Kees", lastName: "Visser", city: "Utrecht", source: "website" as const },
-      { firstName: "Henk", lastName: "Smit", city: "Eindhoven", source: "indeed" as const },
-      { firstName: "Willem", lastName: "Meijer", city: "Den Haag", source: "referral" as const },
-      { firstName: "Dirk", lastName: "de Boer", city: "Breda", source: "indeed" as const },
-      { firstName: "Gerrit", lastName: "Mulder", city: "Tilburg", source: "facebook" as const },
-      { firstName: "Arjan", lastName: "de Groot", city: "Arnhem", source: "website" as const },
+      { firstName: "Jan", lastName: "de Vries", city: "Amsterdam", source: "indeed" as const, availabilityType: "direct" as const, availabilityStartDate: today, contractType: "vast" as const },
+      { firstName: "Piet", lastName: "Bakker", city: "Rotterdam", source: "marktplaats" as const, availabilityType: "direct" as const, availabilityStartDate: today, contractType: "tijdelijk" as const },
+      { firstName: "Kees", lastName: "Visser", city: "Utrecht", source: "website" as const, availabilityType: "opzegtermijn" as const, availabilityStartDate: twoWeeksOut, contractType: "vast" as const },
+      { firstName: "Henk", lastName: "Smit", city: "Eindhoven", source: "indeed" as const, availabilityType: "direct" as const, availabilityStartDate: today, contractType: "uitzend" as const },
+      { firstName: "Willem", lastName: "Meijer", city: "Den Haag", source: "referral" as const, availabilityType: "in_overleg" as const, availabilityStartDate: null, contractType: "zzp" as const },
+      { firstName: "Dirk", lastName: "de Boer", city: "Breda", source: "indeed" as const, availabilityType: "direct" as const, availabilityStartDate: today, contractType: "vast" as const },
+      { firstName: "Gerrit", lastName: "Mulder", city: "Tilburg", source: "facebook" as const, availabilityType: "opzegtermijn" as const, availabilityStartDate: twoWeeksOut, contractType: "tijdelijk" as const },
+      { firstName: "Arjan", lastName: "de Groot", city: "Arnhem", source: "website" as const, availabilityType: "in_overleg" as const, availabilityStartDate: null, contractType: "vast" as const },
     ];
 
     const candidateIds: string[] = [];
@@ -232,6 +236,9 @@ async function seedEmployerOrg(demoUserId: string): Promise<void> {
           email: `${c.firstName.toLowerCase()}.${c.lastName.toLowerCase().replace(/ /g, "")}@email.com`,
           city: c.city,
           source: c.source,
+          availabilityType: c.availabilityType,
+          availabilityStartDate: c.availabilityStartDate ? new Date(c.availabilityStartDate) : null,
+          contractType: c.contractType,
         })
         .returning();
       candidateIds.push(inserted.id);
@@ -487,6 +494,7 @@ async function seedAgencyOrg(demoUserId: string): Promise<void> {
         ownerId: demoUserId,
         clientId: client1.id,
         requiredLicenses: JSON.stringify(["CE", "code95"]),
+        hourlyRate: "22.50",
       })
       .returning();
 
@@ -503,6 +511,7 @@ async function seedAgencyOrg(demoUserId: string): Promise<void> {
         ownerId: demoUserId,
         clientId: client1.id,
         requiredLicenses: JSON.stringify(["C", "code95"]),
+        hourlyRate: "19.50",
       })
       .returning();
 
@@ -519,6 +528,7 @@ async function seedAgencyOrg(demoUserId: string): Promise<void> {
         ownerId: demoUserId,
         clientId: client2.id,
         requiredLicenses: JSON.stringify(["CE", "code95", "ADR"]),
+        hourlyRate: "25.00",
       })
       .returning();
 
@@ -535,23 +545,26 @@ async function seedAgencyOrg(demoUserId: string): Promise<void> {
         ownerId: demoUserId,
         clientId: client2.id,
         requiredLicenses: JSON.stringify(["CE", "code95"]),
+        hourlyRate: "21.00",
       })
       .returning();
 
     console.log("  Created 4 vacancies");
 
-    // 10 candidates (mix of NL/PL/RO per transport reality)
+    // 10 candidates (mix of NL/PL/RO per transport reality) with transport fields
+    const agencyToday = new Date().toISOString().split("T")[0];
+    const agencyTwoWeeks = new Date(Date.now() + 14 * 86400000).toISOString().split("T")[0];
     const agencyCandidateData = [
-      { firstName: "Marek", lastName: "Kowalski", city: "Rotterdam", source: "indeed" as const },
-      { firstName: "Tomasz", lastName: "Nowak", city: "Den Haag", source: "facebook" as const },
-      { firstName: "Stefan", lastName: "Wisniewksi", city: "Amsterdam", source: "indeed" as const },
-      { firstName: "Ion", lastName: "Popescu", city: "Utrecht", source: "referral" as const },
-      { firstName: "Mihai", lastName: "Ionescu", city: "Eindhoven", source: "website" as const },
-      { firstName: "Rob", lastName: "Janssen", city: "Groningen", source: "indeed" as const },
-      { firstName: "Bas", lastName: "Dekker", city: "Amersfoort", source: "marktplaats" as const },
-      { firstName: "Peter", lastName: "van Dijk", city: "Breda", source: "indeed" as const },
-      { firstName: "Andrzej", lastName: "Zielinski", city: "Maastricht", source: "facebook" as const },
-      { firstName: "Florin", lastName: "Dumitrescu", city: "Tilburg", source: "referral" as const },
+      { firstName: "Marek", lastName: "Kowalski", city: "Rotterdam", source: "indeed" as const, availabilityType: "direct" as const, availabilityStartDate: agencyToday, contractType: "uitzend" as const },
+      { firstName: "Tomasz", lastName: "Nowak", city: "Den Haag", source: "facebook" as const, availabilityType: "direct" as const, availabilityStartDate: agencyToday, contractType: "uitzend" as const },
+      { firstName: "Stefan", lastName: "Wisniewksi", city: "Amsterdam", source: "indeed" as const, availabilityType: "opzegtermijn" as const, availabilityStartDate: agencyTwoWeeks, contractType: "uitzend" as const },
+      { firstName: "Ion", lastName: "Popescu", city: "Utrecht", source: "referral" as const, availabilityType: "direct" as const, availabilityStartDate: agencyToday, contractType: "tijdelijk" as const },
+      { firstName: "Mihai", lastName: "Ionescu", city: "Eindhoven", source: "website" as const, availabilityType: "in_overleg" as const, availabilityStartDate: null, contractType: "uitzend" as const },
+      { firstName: "Rob", lastName: "Janssen", city: "Groningen", source: "indeed" as const, availabilityType: "direct" as const, availabilityStartDate: agencyToday, contractType: "vast" as const },
+      { firstName: "Bas", lastName: "Dekker", city: "Amersfoort", source: "marktplaats" as const, availabilityType: "opzegtermijn" as const, availabilityStartDate: agencyTwoWeeks, contractType: "zzp" as const },
+      { firstName: "Peter", lastName: "van Dijk", city: "Breda", source: "indeed" as const, availabilityType: "direct" as const, availabilityStartDate: agencyToday, contractType: "uitzend" as const },
+      { firstName: "Andrzej", lastName: "Zielinski", city: "Maastricht", source: "facebook" as const, availabilityType: "in_overleg" as const, availabilityStartDate: null, contractType: "uitzend" as const },
+      { firstName: "Florin", lastName: "Dumitrescu", city: "Tilburg", source: "referral" as const, availabilityType: "direct" as const, availabilityStartDate: agencyToday, contractType: "tijdelijk" as const },
     ];
 
     const agencyCandidateIds: string[] = [];
@@ -566,6 +579,9 @@ async function seedAgencyOrg(demoUserId: string): Promise<void> {
           email: `${c.firstName.toLowerCase()}.${c.lastName.toLowerCase().replace(/ /g, "")}@email.com`,
           city: c.city,
           source: c.source,
+          availabilityType: c.availabilityType,
+          availabilityStartDate: c.availabilityStartDate ? new Date(c.availabilityStartDate) : null,
+          contractType: c.contractType,
         })
         .returning();
       agencyCandidateIds.push(inserted.id);
@@ -625,8 +641,9 @@ async function seedAgencyOrg(demoUserId: string): Promise<void> {
       { candidateIdx: 8, vacancyId: vac1.id, stage: "to-screen" },
     ];
 
+    const agencyAppIds: string[] = [];
     for (const app of agencyAppMappings) {
-      await tx.insert(candidateApplications).values({
+      const [inserted] = await tx.insert(candidateApplications).values({
         organizationId: AGENCY_ORG_ID,
         candidateId: agencyCandidateIds[app.candidateIdx],
         vacancyId: app.vacancyId,
@@ -640,9 +657,27 @@ async function seedAgencyOrg(demoUserId: string): Promise<void> {
               : "pending",
         sentToClient: app.stage === "sent-to-client",
         sourceDetail: "Demo seed",
-      });
+      }).returning();
+      agencyAppIds.push(inserted.id);
     }
     console.log("  Created 15 applications");
+
+    // Create a placement for the hired candidate (Rob Janssen -> Chauffeur CE - Regio Noord)
+    // This is mapping index 5 in agencyAppMappings: candidateIdx 5, vac1, stage "hired"
+    const hiredAppId = agencyAppIds[5]; // Rob Janssen hired at vac1
+    await tx.insert(placements).values({
+      organizationId: AGENCY_ORG_ID,
+      applicationId: hiredAppId,
+      candidateId: agencyCandidateIds[5],
+      vacancyId: vac1.id,
+      clientId: client1.id,
+      agreedRate: "23.00",
+      inlenersbeloning: true,
+      startDate: new Date(),
+      notes: "Proefperiode 4 weken. Reiskostenvergoeding conform cao.",
+      createdBy: demoUserId,
+    });
+    console.log("  Created 1 placement for hired candidate");
 
     // 6 tasks
     const now = new Date();

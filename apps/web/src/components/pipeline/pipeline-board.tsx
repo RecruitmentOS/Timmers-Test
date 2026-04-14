@@ -21,6 +21,7 @@ import {
 import { useIsEmployer } from "@/lib/use-mode";
 import { PipelineColumn } from "./pipeline-column";
 import { QualificationDrawer } from "@/components/qualification/qualification-drawer";
+import { PlacementDrawer } from "@/components/placement-drawer";
 import { usePipelineSync } from "@/hooks/use-socket";
 import { useLiveCursors } from "@/hooks/use-live-cursors";
 import { LiveCursorsLayer } from "./live-cursors-layer";
@@ -46,6 +47,7 @@ export function PipelineBoard({ vacancyId, filters, compact }: Props) {
   // Live cursors: show other users' cursor positions
   const { cursors, containerRef, emitMove } = useLiveCursors(vacancyId);
   const [selectedCard, setSelectedCard] = useState<CardType | null>(null);
+  const [placementAppId, setPlacementAppId] = useState<string | null>(null);
 
   if (isLoading || !board) {
     return (
@@ -124,6 +126,34 @@ export function PipelineBoard({ vacancyId, filters, compact }: Props) {
         vacancyId={vacancyId}
         application={selectedCard}
         onClose={() => setSelectedCard(null)}
+      />
+      {/* Placement drawer — "Plaatsing aanmaken" for candidates in hired stage */}
+      {(() => {
+        const hiredStage = board.stages.find(
+          (s) => s.name.toLowerCase().includes("aangenomen") || s.name.toLowerCase().includes("hired")
+        );
+        const isHired = hiredStage?.applications.some((a) => a.id === selectedCard?.id);
+        if (selectedCard && isHired) {
+          return (
+            <div className="fixed bottom-6 right-6 z-50">
+              <button
+                type="button"
+                onClick={() => {
+                  setPlacementAppId(selectedCard.id);
+                  setSelectedCard(null);
+                }}
+                className="h-9 px-4 rounded bg-emerald-600 text-white text-sm hover:bg-emerald-700 shadow-lg"
+              >
+                Plaatsing aanmaken
+              </button>
+            </div>
+          );
+        }
+        return null;
+      })()}
+      <PlacementDrawer
+        applicationId={placementAppId}
+        onClose={() => setPlacementAppId(null)}
       />
     </>
   );
