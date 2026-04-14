@@ -57,6 +57,25 @@ const TRANSPORT_PRESETS = [
     ]),
     isDefault: true,
   },
+  {
+    name: "Buschauffeur D/D1",
+    criteria: JSON.stringify([
+      { type: "license", value: "D", required: true },
+      { type: "license", value: "code_95", required: true },
+      { type: "experience", minYears: 1, description: "Minimaal 1 jaar ervaring personenvervoer" },
+      { type: "document", value: "taxipas", required: false },
+    ]),
+    isDefault: true,
+  },
+  {
+    name: "Koerier B",
+    criteria: JSON.stringify([
+      { type: "license", value: "B", required: true },
+      { type: "experience", minYears: 0, description: "Geen minimale ervaring vereist" },
+      { type: "skill", value: "route_planning", description: "Kennis routeplanning en navigatie" },
+    ]),
+    isDefault: true,
+  },
 ];
 
 /**

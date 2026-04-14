@@ -16,6 +16,24 @@ export function useVacancies(filters?: Record<string, string>) {
   });
 }
 
+export function useArchiveVacancy() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiClient<Vacancy>(`/api/vacancies/${id}/archive`, { method: "POST" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["vacancies"] }),
+  });
+}
+
+export function useUnarchiveVacancy() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) =>
+      apiClient<Vacancy>(`/api/vacancies/${id}/unarchive`, { method: "POST" }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["vacancies"] }),
+  });
+}
+
 export function useVacancy(id: string) {
   return useQuery<Vacancy>({
     queryKey: ["vacancy", id],

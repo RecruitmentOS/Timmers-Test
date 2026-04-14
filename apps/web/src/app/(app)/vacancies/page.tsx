@@ -2,11 +2,12 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useVacancies } from "@/hooks/use-vacancies";
+import { useVacancies, useArchiveVacancy, useUnarchiveVacancy } from "@/hooks/use-vacancies";
 import type { Vacancy } from "@recruitment-os/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Select,
   SelectContent,
@@ -22,8 +23,14 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Plus, MapPin, Briefcase } from "lucide-react";
+import { Plus, MapPin, Briefcase, MoreHorizontal, Archive, ArchiveRestore } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 
 const STATUS_COLORS: Record<string, string> = {
@@ -31,21 +38,54 @@ const STATUS_COLORS: Record<string, string> = {
   active: "bg-green-100 text-green-800",
   paused: "bg-yellow-100 text-yellow-800",
   closed: "bg-red-100 text-red-800",
+  archived: "bg-slate-100 text-slate-500",
 };
 
 export default function VacanciesPage() {
   const [status, setStatus] = useState("");
   const [location, setLocation] = useState("");
   const [search, setSearch] = useState("");
+  const [showArchived, setShowArchived] = useState(false);
+  const [toast, setToast] = useState<{ kind: "success" | "error"; text: string } | null>(null);
 
   const filters: Record<string, string> = {};
   if (status && status !== "all") filters.status = status;
   if (location) filters.location = location;
   if (search) filters.search = search;
+  if (showArchived) filters.includeArchived = "true";
 
   const { data: vacancies, isLoading } = useVacancies(
     Object.keys(filters).length > 0 ? filters : undefined
   );
+
+  const archiveMutation = useArchiveVacancy();
+  const unarchiveMutation = useUnarchiveVacancy();
+
+  const handleArchive = (id: string) => {
+    archiveMutation.mutate(id, {
+      onSuccess: () => {
+        setToast({ kind: "success", text: "Vacature gearchiveerd" });
+        setTimeout(() => setToast(null), 3000);
+      },
+      onError: () => {
+        setToast({ kind: "error", text: "Archiveren mislukt" });
+        setTimeout(() => setToast(null), 3000);
+      },
+    });
+  };
+
+  const handleUnarchive = (id: string) => {
+    unarchiveMutation.mutate(id, {
+      onSuccess: () => {
+        setToast({ kind: "success", text: "Vacature hersteld naar concept" });
+        setTimeout(() => setToast(null), 3000);
+      },
+      onError: () => {
+        setToast({ kind: "error", text: "Herstellen mislukt" });
+        setTimeout(() => setToast(null), 3000);
+      },
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -59,7 +99,7 @@ export default function VacanciesPage() {
         </Link>
       </div>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <Input
           placeholder="Search by title..."
           value={search}
@@ -84,7 +124,27 @@ export default function VacanciesPage() {
           onChange={(e) => setLocation(e.target.value)}
           className="w-48"
         />
+        <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
+          <Checkbox
+            checked={showArchived}
+            onCheckedChange={(checked) => setShowArchived(checked === true)}
+          />
+          Show archived
+        </label>
       </div>
+
+      {/* Inline toast */}
+      {toast && (
+        <div
+          className={`rounded-md px-4 py-2 text-sm ${
+            toast.kind === "success"
+              ? "bg-green-50 text-green-800 border border-green-200"
+              : "bg-red-50 text-red-800 border border-red-200"
+          }`}
+        >
+          {toast.text}
+        </div>
+      )}
 
       {isLoading ? (
         <div className="space-y-3">
@@ -111,11 +171,15 @@ export default function VacanciesPage() {
               <TableHead className="hidden sm:table-cell">Location</TableHead>
               <TableHead className="hidden md:table-cell">Type</TableHead>
               <TableHead className="hidden md:table-cell">Created</TableHead>
+              <TableHead className="w-10" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {vacancies.map((v: Vacancy) => (
-              <TableRow key={v.id}>
+              <TableRow
+                key={v.id}
+                className={v.status === "archived" ? "opacity-60" : ""}
+              >
                 <TableCell>
                   <Link
                     href={`/vacancies/${v.id}`}
@@ -145,6 +209,30 @@ export default function VacanciesPage() {
                 </TableCell>
                 <TableCell className="hidden md:table-cell text-muted-foreground">
                   {new Date(v.createdAt).toLocaleDateString()}
+                </TableCell>
+                <TableCell>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger
+                      render={
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      }
+                    />
+                    <DropdownMenuContent align="end">
+                      {v.status === "archived" ? (
+                        <DropdownMenuItem onSelect={() => handleUnarchive(v.id)}>
+                          <ArchiveRestore className="mr-2 h-4 w-4" />
+                          Unarchive
+                        </DropdownMenuItem>
+                      ) : (
+                        <DropdownMenuItem onSelect={() => handleArchive(v.id)}>
+                          <Archive className="mr-2 h-4 w-4" />
+                          Archive
+                        </DropdownMenuItem>
+                      )}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </TableCell>
               </TableRow>
             ))}

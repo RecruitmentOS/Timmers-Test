@@ -168,16 +168,16 @@ async function seed() {
 
     console.log("  Created 2 sample clients");
 
-    // 6. Create sample vacancies
+    // 6. Create sample vacancies (real transport job titles and NL transport hubs)
     const [vac1] = await tx
       .insert(vacancies)
       .values({
         organizationId: orgId,
-        title: "Warehouse Picker - Day Shift",
+        title: "CE Chauffeur Internationaal Transport",
         description:
-          "Looking for experienced warehouse pickers for our Venlo distribution center. Day shift (07:00-15:30). Physical work, picking accuracy important.",
+          "Wij zoeken ervaren CE chauffeurs voor internationaal transport over de Benelux en Duitsland. Rijbewijs CE + code 95 + digitachograafkaart vereist. Minimaal 2 jaar ervaring.",
         location: "Venlo",
-        employmentType: "temporary",
+        employmentType: "full-time",
         status: "active",
         ownerId: actualAdminUserId,
         clientId: client1.id,
@@ -188,9 +188,9 @@ async function seed() {
       .insert(vacancies)
       .values({
         organizationId: orgId,
-        title: "Delivery Driver Cat B",
+        title: "Koerier Last-mile Delivery",
         description:
-          "Seeking delivery drivers for last-mile parcel delivery in Amsterdam region. Valid Cat B license required. Company van provided.",
+          "Koeriers gezocht voor pakketbezorging in de regio Amsterdam. Rijbewijs B vereist. Bedrijfsbus wordt verstrekt. Flexibele diensten.",
         location: "Amsterdam",
         employmentType: "full-time",
         status: "active",
@@ -203,18 +203,18 @@ async function seed() {
       .insert(vacancies)
       .values({
         organizationId: orgId,
-        title: "Production Line Operator",
+        title: "C Chauffeur Distributie",
         description:
-          "Machine operators needed for food production facility. Rotating shifts. HACCP knowledge is a plus.",
+          "C Chauffeur voor distributie in de regio Rotterdam/Europoort. Dagdiensten, laden en lossen met pompwagen. Rijbewijs C + code 95 vereist.",
         location: "Rotterdam",
-        employmentType: "contract",
+        employmentType: "full-time",
         status: "draft",
         ownerId: actualAdminUserId,
         clientId: client2.id,
       })
       .returning();
 
-    console.log("  Created 3 sample vacancies");
+    console.log("  Created 3 sample vacancies (transport)");
 
     // 7. Create sample candidates
     const [cand1] = await tx
