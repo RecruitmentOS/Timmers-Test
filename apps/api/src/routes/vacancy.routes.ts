@@ -21,7 +21,7 @@ const updateVacancySchema = z.object({
   description: z.string().optional(),
   location: z.string().optional(),
   employmentType: z.string().optional(),
-  status: z.enum(["draft", "active", "paused", "closed"]).optional(),
+  status: z.enum(["draft", "active", "paused", "closed", "archived"]).optional(),
   clientId: z.string().uuid().nullable().optional(),
   qualificationCriteria: z.any().optional(),
 });
@@ -39,13 +39,14 @@ export const vacancyRoutes = new Hono<AppEnv>()
   .get("/", requirePermission("vacancy", "read"), async (c) => {
     try {
       const orgId = c.get("organizationId");
-      const { status, ownerId, clientId, location, search } = c.req.query();
+      const { status, ownerId, clientId, location, search, includeArchived } = c.req.query();
       const result = await vacancyService.list(orgId, {
         status,
         ownerId,
         clientId,
         location,
         search,
+        includeArchived: includeArchived === "true",
       });
       return c.json(result);
     } catch (e) {
@@ -192,6 +193,38 @@ export const vacancyRoutes = new Hono<AppEnv>()
       return errorResponse(c, e as Error);
     }
   })
+
+  .post(
+    "/:id/archive",
+    requirePermission("vacancy", "update"),
+    async (c) => {
+      try {
+        const orgId = c.get("organizationId");
+        const id = c.req.param("id");
+        const result = await vacancyService.archive(orgId, id);
+        if (!result) return c.json({ error: "Not found" }, 404);
+        return c.json(result);
+      } catch (e) {
+        return errorResponse(c, e as Error);
+      }
+    }
+  )
+
+  .post(
+    "/:id/unarchive",
+    requirePermission("vacancy", "update"),
+    async (c) => {
+      try {
+        const orgId = c.get("organizationId");
+        const id = c.req.param("id");
+        const result = await vacancyService.unarchive(orgId, id);
+        if (!result) return c.json({ error: "Not found" }, 404);
+        return c.json(result);
+      } catch (e) {
+        return errorResponse(c, e as Error);
+      }
+    }
+  )
 
   .get(
     "/:id/applications",

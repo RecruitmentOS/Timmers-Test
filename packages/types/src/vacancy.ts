@@ -1,7 +1,7 @@
 /**
  * Vacancy status values.
  */
-export type VacancyStatus = "draft" | "active" | "paused" | "closed";
+export type VacancyStatus = "draft" | "active" | "paused" | "closed" | "archived";
 
 /**
  * Vacancy - represents an open position to recruit for.

@@ -1,4 +1,4 @@
-import { eq, and, ilike, isNull, sql } from "drizzle-orm";
+import { eq, ne, and, ilike, isNull, sql } from "drizzle-orm";
 import { withTenantContext } from "../lib/with-tenant-context.js";
 import {
   vacancies,
@@ -60,10 +60,16 @@ export const vacancyService = {
       clientId?: string;
       location?: string;
       search?: string;
+      includeArchived?: boolean;
     }
   ) {
     return withTenantContext(orgId, async (tx) => {
       const conditions = [isNull(vacancies.deletedAt)];
+
+      // Exclude archived vacancies by default unless explicitly requested
+      if (!filters?.includeArchived) {
+        conditions.push(ne(vacancies.status, "archived" as any));
+      }
 
       if (filters?.status) {
         conditions.push(eq(vacancies.status, filters.status as any));
@@ -271,6 +277,58 @@ export const vacancyService = {
         .from(vacancyNotes)
         .where(eq(vacancyNotes.vacancyId, vacancyId))
         .orderBy(sql`${vacancyNotes.createdAt} DESC`);
+    });
+  },
+
+  async archive(orgId: string, vacancyId: string) {
+    return withTenantContext(orgId, async (tx) => {
+      const [vacancy] = await tx
+        .update(vacancies)
+        .set({
+          status: "archived",
+          updatedAt: new Date(),
+        })
+        .where(eq(vacancies.id, vacancyId))
+        .returning();
+
+      if (vacancy) {
+        await tx.insert(activityLog).values({
+          organizationId: orgId,
+          entityType: "vacancy",
+          entityId: vacancyId,
+          action: "archived",
+          actorId: vacancy.ownerId,
+          metadata: { title: vacancy.title },
+        });
+      }
+
+      return vacancy ?? null;
+    });
+  },
+
+  async unarchive(orgId: string, vacancyId: string) {
+    return withTenantContext(orgId, async (tx) => {
+      const [vacancy] = await tx
+        .update(vacancies)
+        .set({
+          status: "draft",
+          updatedAt: new Date(),
+        })
+        .where(eq(vacancies.id, vacancyId))
+        .returning();
+
+      if (vacancy) {
+        await tx.insert(activityLog).values({
+          organizationId: orgId,
+          entityType: "vacancy",
+          entityId: vacancyId,
+          action: "unarchived",
+          actorId: vacancy.ownerId,
+          metadata: { title: vacancy.title },
+        });
+      }
+
+      return vacancy ?? null;
     });
   },
 };

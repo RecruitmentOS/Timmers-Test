@@ -20,6 +20,7 @@ export const vacancyStatusEnum = pgEnum("vacancy_status", [
   "active",
   "paused",
   "closed",
+  "archived",
 ]);
 
 /**
