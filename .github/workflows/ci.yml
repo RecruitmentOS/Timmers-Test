@@ -31,6 +31,13 @@ jobs:
       - name: Type check
         run: pnpm turbo type-check
 
-      # Tests placeholder — Phase 9 adds Vitest + Playwright
-      # - name: Test
-      #   run: pnpm turbo test
+      - name: Unit tests
+        run: pnpm turbo test
+
+      - name: Install Playwright browsers
+        run: pnpm --filter @recruitment-os/web exec playwright install chromium --with-deps
+
+      - name: E2E tests
+        run: pnpm --filter @recruitment-os/web test:e2e
+        env:
+          CI: true
