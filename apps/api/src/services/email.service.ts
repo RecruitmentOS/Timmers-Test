@@ -11,6 +11,7 @@ import {
   getSubject as hmInviteSubject,
 } from "../emails/hiring-manager-invite.js";
 import { PasswordResetEmail, getSubject as passwordResetSubject } from "../emails/password-reset.js";
+import { TeamInviteEmail, getSubject as teamInviteSubject } from "../emails/team-invite.js";
 
 const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
@@ -130,5 +131,30 @@ export const emailService = {
       })
     );
     return send(to, subject, html, "password-reset");
+  },
+
+  async sendTeamInvite(
+    to: string,
+    props: {
+      name: string;
+      orgName: string;
+      inviterName: string;
+      acceptUrl: string;
+      role: string;
+      language: "nl" | "en";
+    }
+  ): Promise<SendResult> {
+    const subject = teamInviteSubject(props.orgName, props.language);
+    const html = await render(
+      TeamInviteEmail({
+        name: props.name,
+        orgName: props.orgName,
+        inviterName: props.inviterName,
+        acceptUrl: props.acceptUrl,
+        role: props.role,
+        language: props.language,
+      })
+    );
+    return send(to, subject, html, "team-invite");
   },
 };

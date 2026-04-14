@@ -3,6 +3,7 @@ export type EmailTemplateName =
   | "magic-link"
   | "application-confirmation"
   | "hiring-manager-invite"
-  | "password-reset";
+  | "password-reset"
+  | "team-invite";
 
 export type EmailLocale = "nl" | "en";
