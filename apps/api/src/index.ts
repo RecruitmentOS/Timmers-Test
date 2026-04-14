@@ -1,3 +1,4 @@
+import "./instrument.js";
 import "dotenv/config";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
@@ -36,9 +37,13 @@ import { linkedinRoutes } from "./routes/linkedin.routes.js";
 import { calendarRoutes } from "./routes/calendar.routes.js";
 import { interviewRoutes } from "./routes/interview.routes.js";
 import type { AppEnv } from "./lib/app-env.js";
-import { startJobQueue } from "./lib/job-queue.js";
+import { startJobQueue, getJobQueue } from "./lib/job-queue.js";
 import { registerJobHandlers } from "./jobs/job-handlers.js";
 import { initSocketIO } from "./lib/socket.js";
+import { Sentry } from "./instrument.js";
+import { publicLimiter } from "./middleware/rate-limit.middleware.js";
+import { db } from "./db/index.js";
+import { sql } from "drizzle-orm";
 
 const app = new Hono<AppEnv>();
 
@@ -58,8 +63,43 @@ app.use(
   })
 );
 
-// Health check (no auth required)
-app.get("/health", (c) => c.json({ status: "ok" }));
+// Enhanced health check (no auth required) — REL-04
+app.get("/health", async (c) => {
+  const checks: Record<string, string> = {};
+
+  // Probe database
+  try {
+    await db.execute(sql`SELECT 1`);
+    checks.database = "ok";
+  } catch {
+    checks.database = "error";
+  }
+
+  // Probe pg-boss job queue
+  try {
+    if (process.env.JOBS_ENABLED === "true") {
+      const boss = getJobQueue();
+      await boss.getQueues();
+      checks.jobQueue = "ok";
+    } else {
+      checks.jobQueue = "disabled";
+    }
+  } catch {
+    checks.jobQueue = "error";
+  }
+
+  const status =
+    checks.database === "ok" &&
+    (checks.jobQueue === "ok" || checks.jobQueue === "disabled")
+      ? "ok"
+      : "degraded";
+
+  return c.json({ status, checks }, status === "ok" ? 200 : 503);
+});
+
+// Rate limiting on public and auth routes — REL-02
+app.use("/api/public/*", publicLimiter);
+app.use("/api/auth/*", publicLimiter);
 
 // Better Auth handler — must be before auth middleware
 app.on(["POST", "GET"], "/api/auth/**", (c) => {
@@ -116,6 +156,12 @@ app.route("/api/ai-screening", aiScreeningRoutes);
 app.route("/api/linkedin", linkedinRoutes);
 app.route("/api/calendar", calendarRoutes);
 app.route("/api/interviews", interviewRoutes);
+
+// Sentry error handler — captures unhandled errors
+app.onError((err, c) => {
+  Sentry.captureException(err);
+  return c.json({ error: "Internal Server Error" }, 500);
+});
 
 // Boot pg-boss job queue + register handlers before listening.
 // Gated by JOBS_ENABLED env var so dev can opt out.

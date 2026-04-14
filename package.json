@@ -1,6 +1,7 @@
 {
   "name": "@recruitment-os/root",
   "private": true,
+  "packageManager": "pnpm@10.20.0",
   "scripts": {
     "dev": "turbo dev",
     "build": "turbo build",
@@ -8,6 +9,7 @@
     "lint": "turbo lint"
   },
   "devDependencies": {
+    "turbo": "^2.9.6",
     "turborepo": "^0.0.1",
     "typescript": "^5.9.3"
   }
