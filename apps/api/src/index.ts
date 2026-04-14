@@ -36,6 +36,7 @@ import { aiScreeningRoutes } from "./routes/ai-screening.routes.js";
 import { linkedinRoutes } from "./routes/linkedin.routes.js";
 import { calendarRoutes } from "./routes/calendar.routes.js";
 import { interviewRoutes } from "./routes/interview.routes.js";
+import { placementRoutes } from "./routes/placement.routes.js";
 import { gdprRoutes } from "./routes/gdpr.routes.js";
 import type { AppEnv } from "./lib/app-env.js";
 import { startJobQueue, getJobQueue } from "./lib/job-queue.js";
@@ -157,6 +158,7 @@ app.route("/api/ai-screening", aiScreeningRoutes);
 app.route("/api/linkedin", linkedinRoutes);
 app.route("/api/calendar", calendarRoutes);
 app.route("/api/interviews", interviewRoutes);
+app.route("/api/placements", placementRoutes);
 app.route("/api/gdpr", gdprRoutes);
 
 // Sentry error handler — captures unhandled errors

@@ -15,6 +15,9 @@ const createCandidateSchema = z.object({
   email: z.string().email().optional(),
   city: z.string().optional(),
   source: z.string().optional(),
+  availabilityType: z.enum(["direct", "opzegtermijn", "in_overleg"]).optional(),
+  availabilityStartDate: z.string().datetime().optional(),
+  contractType: z.enum(["vast", "tijdelijk", "uitzend", "zzp"]).optional(),
 });
 
 const updateCandidateSchema = z.object({
@@ -24,6 +27,9 @@ const updateCandidateSchema = z.object({
   email: z.string().email().optional(),
   city: z.string().optional(),
   source: z.string().optional(),
+  availabilityType: z.enum(["direct", "opzegtermijn", "in_overleg"]).nullable().optional(),
+  availabilityStartDate: z.string().datetime().nullable().optional(),
+  contractType: z.enum(["vast", "tijdelijk", "uitzend", "zzp"]).nullable().optional(),
 });
 
 export const candidateRoutes = new Hono<AppEnv>()

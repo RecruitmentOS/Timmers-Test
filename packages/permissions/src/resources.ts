@@ -16,6 +16,7 @@ export const RESOURCES = {
   campaign: ["create", "read", "update", "delete"],
   calendar: ["create", "read", "delete"],
   interview: ["create", "read", "update", "delete"],
+  placement: ["create", "read", "update"],
 } as const;
 
 export type Resource = keyof typeof RESOURCES;

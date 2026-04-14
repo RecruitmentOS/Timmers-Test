@@ -14,6 +14,7 @@ const createVacancySchema = z.object({
   employmentType: z.string().optional(),
   clientId: z.string().uuid().optional(),
   qualificationCriteria: z.any().optional(),
+  hourlyRate: z.number().positive().optional(),
 });
 
 const updateVacancySchema = z.object({
@@ -24,6 +25,7 @@ const updateVacancySchema = z.object({
   status: z.enum(["draft", "active", "paused", "closed", "archived"]).optional(),
   clientId: z.string().uuid().nullable().optional(),
   qualificationCriteria: z.any().optional(),
+  hourlyRate: z.number().positive().nullable().optional(),
 });
 
 const addAssignmentSchema = z.object({

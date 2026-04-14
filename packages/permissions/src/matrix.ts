@@ -22,6 +22,7 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
     campaign: ["create", "read", "update", "delete"],
     calendar: ["create", "read", "delete"],
     interview: ["create", "read", "update", "delete"],
+    placement: ["create", "read", "update"],
   },
   agency_admin: {
     vacancy: ["create", "read", "update", "delete"],
@@ -41,6 +42,7 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
     campaign: ["create", "read", "update", "delete"],
     calendar: ["create", "read", "delete"],
     interview: ["create", "read", "update", "delete"],
+    placement: ["create", "read", "update"],
   },
   recruiter: {
     vacancy: ["create", "read", "update"],
@@ -58,6 +60,7 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
     campaign: ["create", "read", "update", "delete"],
     calendar: ["create", "read", "delete"],
     interview: ["create", "read", "update", "delete"],
+    placement: ["create", "read", "update"],
   },
   agent: {
     vacancy: ["read"],
@@ -72,6 +75,7 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
     campaign: ["read"],
     calendar: ["create", "read", "delete"],
     interview: ["create", "read", "update"],
+    placement: ["read"],
   },
   hiring_manager: {
     vacancy: ["read"],
@@ -92,6 +96,7 @@ export const PERMISSION_MATRIX: PermissionMatrix = {
     notification: ["read", "update"],
     activity: ["read"],
     campaign: ["read"],
+    placement: ["read"],
   },
   marketing_op: {
     vacancy: ["read"],
