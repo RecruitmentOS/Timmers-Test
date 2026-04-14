@@ -14,6 +14,7 @@ import { cvParseService } from "../services/cv-parse.service.js";
 import { geocodingService } from "../services/geocoding.service.js";
 import { registerBillingJobs } from "./billing-jobs.js";
 import { registerMetaInsightsJobs } from "./meta-insights-sync.js";
+import { registerBackupJob } from "./backup.job.js";
 
 type OverdueReminderData = { taskId: string; orgId: string };
 type GeocodeCandidateData = { orgId: string; candidateId: string; city: string };
@@ -240,4 +241,7 @@ export async function registerJobHandlers(): Promise<void> {
 
   // Register Meta Insights sync job (daily at 06:00 UTC)
   await registerMetaInsightsJobs(boss);
+
+  // Register nightly database backup job (02:00 UTC)
+  await registerBackupJob(boss);
 }
