@@ -3,6 +3,7 @@ import {
   uuid,
   varchar,
   text,
+  numeric,
   timestamp,
   boolean,
   pgEnum,
@@ -11,6 +12,7 @@ import { tenantRlsPolicies } from "./rls-helpers.js";
 import { user } from "./auth.js";
 import { candidates } from "./candidates.js";
 import { vacancies } from "./vacancies.js";
+import { clients } from "./clients.js";
 import { pipelineStages } from "./pipeline-stages.js";
 import { campaigns } from "./campaigns.js";
 
@@ -93,4 +95,36 @@ export const applicationStageHistory = pgTable(
   },
   () =>
     tenantRlsPolicies("application_stage_history")
+).enableRLS();
+
+/**
+ * Placements record the agreed terms when a candidate is hired via an application.
+ * One application can have zero or one placement. Tightly coupled to application lifecycle.
+ */
+export const placements = pgTable(
+  "placements",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: uuid("organization_id").notNull(),
+    applicationId: uuid("application_id")
+      .notNull()
+      .references(() => candidateApplications.id),
+    candidateId: uuid("candidate_id")
+      .notNull()
+      .references(() => candidates.id),
+    vacancyId: uuid("vacancy_id")
+      .notNull()
+      .references(() => vacancies.id),
+    clientId: uuid("client_id").references(() => clients.id),
+    agreedRate: numeric("agreed_rate", { precision: 8, scale: 2 }),
+    inlenersbeloning: boolean("inlenersbeloning").notNull().default(false),
+    startDate: timestamp("start_date"),
+    notes: text("notes"),
+    createdBy: text("created_by")
+      .notNull()
+      .references(() => user.id),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at").defaultNow().notNull(),
+  },
+  () => tenantRlsPolicies("placements")
 ).enableRLS();

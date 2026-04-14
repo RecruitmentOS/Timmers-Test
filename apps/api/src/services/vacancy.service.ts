@@ -122,6 +122,7 @@ export const vacancyService = {
           employmentType: data.employmentType ?? null,
           clientId: data.clientId ?? null,
           qualificationCriteria: data.qualificationCriteria ?? null,
+          hourlyRate: data.hourlyRate != null ? String(data.hourlyRate) : null,
           slug,
         })
         .returning();
@@ -165,10 +166,14 @@ export const vacancyService = {
         locationChanged = existing?.location !== data.location;
       }
 
+      const { hourlyRate, ...rest } = data;
       const [vacancy] = await tx
         .update(vacancies)
         .set({
-          ...data,
+          ...rest,
+          ...(hourlyRate !== undefined
+            ? { hourlyRate: hourlyRate != null ? String(hourlyRate) : null }
+            : {}),
           updatedAt: new Date(),
         })
         .where(eq(vacancies.id, id))

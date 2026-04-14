@@ -23,6 +23,7 @@ export interface Vacancy {
   geocodedAt: Date | null;
   requiredLicenses: string[] | null;
   distributionChannels: Record<string, boolean> | null;
+  hourlyRate: string | null;
   createdAt: Date;
   updatedAt: Date;
   deletedAt: Date | null;
@@ -42,6 +43,7 @@ export interface CreateVacancyInput {
   slug?: string;
   requiredLicenses?: string[];
   distributionChannels?: Record<string, boolean>;
+  hourlyRate?: number;
 }
 
 /**
@@ -58,4 +60,5 @@ export interface UpdateVacancyInput {
   slug?: string;
   requiredLicenses?: string[];
   distributionChannels?: Record<string, boolean>;
+  hourlyRate?: number | null;
 }

@@ -111,6 +111,11 @@ export const candidateService = {
           email: data.email ?? null,
           city: data.city ?? null,
           source: data.source ?? null,
+          availabilityType: data.availabilityType ?? null,
+          availabilityStartDate: data.availabilityStartDate
+            ? new Date(data.availabilityStartDate)
+            : null,
+          contractType: data.contractType ?? null,
         })
         .returning();
 
@@ -156,10 +161,14 @@ export const candidateService = {
         cityChanged = existing?.city !== data.city;
       }
 
+      const { availabilityStartDate, ...rest } = data;
       const [candidate] = await tx
         .update(candidates)
         .set({
-          ...data,
+          ...rest,
+          ...(availabilityStartDate !== undefined
+            ? { availabilityStartDate: availabilityStartDate ? new Date(availabilityStartDate) : null }
+            : {}),
           updatedAt: new Date(),
         })
         .where(eq(candidates.id, id))

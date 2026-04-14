@@ -48,6 +48,7 @@ export const vacancies = pgTable(
     geocodedAt: timestamp("geocoded_at"),
     requiredLicenses: jsonb("required_licenses"),
     distributionChannels: jsonb("distribution_channels"),
+    hourlyRate: numeric("hourly_rate", { precision: 8, scale: 2 }),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
     deletedAt: timestamp("deleted_at"),
