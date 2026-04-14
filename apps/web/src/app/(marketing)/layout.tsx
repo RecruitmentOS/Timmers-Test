@@ -1,5 +1,10 @@
 import type { Metadata } from "next";
+import dynamic from "next/dynamic";
 import Link from "next/link";
+
+const CookieConsent = dynamic(() => import("@/components/cookie-consent"), {
+  ssr: false,
+});
 
 export const metadata: Metadata = {
   title: "Recruitment OS - Het recruitmentplatform voor transport",
@@ -48,9 +53,9 @@ export default function MarketingLayout({
               &copy; {new Date().getFullYear()} Recruitment OS. Alle rechten voorbehouden.
             </p>
             <div className="flex items-center gap-6">
-              <a href="#" className="text-sm text-slate-500 hover:text-slate-700">
+              <Link href="/privacy" className="text-sm text-slate-500 hover:text-slate-700">
                 Privacy
-              </a>
+              </Link>
               <a href="#" className="text-sm text-slate-500 hover:text-slate-700">
                 Voorwaarden
               </a>
@@ -64,6 +69,7 @@ export default function MarketingLayout({
           </div>
         </div>
       </footer>
+      <CookieConsent />
     </div>
   );
 }

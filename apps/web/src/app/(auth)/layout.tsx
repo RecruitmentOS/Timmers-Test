@@ -1,3 +1,9 @@
+import dynamic from "next/dynamic";
+
+const CookieConsent = dynamic(() => import("@/components/cookie-consent"), {
+  ssr: false,
+});
+
 export default function AuthLayout({
   children,
 }: {
@@ -6,6 +12,7 @@ export default function AuthLayout({
   return (
     <div className="flex min-h-screen items-center justify-center bg-gray-50">
       {children}
+      <CookieConsent />
     </div>
   );
 }

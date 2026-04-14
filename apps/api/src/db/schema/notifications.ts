@@ -5,6 +5,7 @@ import {
   timestamp,
   varchar,
   jsonb,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { tenantRlsPolicies } from "./rls-helpers.js";
 import { user } from "./auth.js";
@@ -40,3 +41,21 @@ export const notifications = pgTable(
   },
   () => tenantRlsPolicies("notifications")
 ).enableRLS();
+
+/**
+ * Notification preferences — per-user email opt-out toggles (GDPR-03).
+ * NOT tenant-scoped (keyed on userId, like user preferences).
+ * All defaults are true — users must explicitly opt out.
+ */
+export const notificationPreferences = pgTable("notification_preferences", {
+  id: uuid("id").primaryKey().defaultRandom(),
+  userId: text("user_id")
+    .notNull()
+    .references(() => user.id)
+    .unique(),
+  emailMentions: boolean("email_mentions").notNull().default(true),
+  emailAssignments: boolean("email_assignments").notNull().default(true),
+  emailTaskReminders: boolean("email_task_reminders").notNull().default(true),
+  emailDocumentExpiry: boolean("email_document_expiry").notNull().default(true),
+  updatedAt: timestamp("updated_at").defaultNow().notNull(),
+});
