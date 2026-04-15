@@ -33,6 +33,16 @@ clientRoutes.get("/vacancies", async (c) => {
   }
 });
 
+clientRoutes.get("/placements", async (c) => {
+  try {
+    const orgId = c.get("organizationId");
+    const result = await portalService.getClientPlacements(orgId);
+    return c.json(result);
+  } catch (e) {
+    return errorResponse(c, e as Error);
+  }
+});
+
 clientRoutes.get("/vacancies/:id/candidates", async (c) => {
   try {
     const orgId = c.get("organizationId");

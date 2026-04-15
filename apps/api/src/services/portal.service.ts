@@ -8,6 +8,7 @@ import {
   pipelineStages,
   activityLog,
   notifications,
+  placements,
 } from "../db/schema/index.js";
 import { user } from "../db/schema/auth.js";
 import { commentService } from "./comment.service.js";
@@ -249,6 +250,44 @@ export const portalService = {
     });
 
     return comment;
+  },
+
+  /**
+   * Get all placements for the client portal.
+   * Shows candidate name, vacancy title, agreed rate, inlenersbeloning, start date.
+   * RLS ensures tenant isolation; no additional clientId filter needed.
+   */
+  async getClientPlacements(orgId: string) {
+    return withTenantContext(orgId, async (tx) => {
+      const rows = await tx
+        .select({
+          id: placements.id,
+          agreedRate: placements.agreedRate,
+          inlenersbeloning: placements.inlenersbeloning,
+          startDate: placements.startDate,
+          createdAt: placements.createdAt,
+          firstName: candidates.firstName,
+          lastName: candidates.lastName,
+          vacancyTitle: vacancies.title,
+          vacancyId: vacancies.id,
+        })
+        .from(placements)
+        .leftJoin(candidates, eq(placements.candidateId, candidates.id))
+        .leftJoin(vacancies, eq(placements.vacancyId, vacancies.id))
+        .orderBy(sql`${placements.createdAt} DESC`);
+
+      return rows.map((r) => ({
+        id: r.id,
+        candidateName:
+          `${r.firstName ?? ""} ${r.lastName ?? ""}`.trim() || "Onbekend",
+        vacancyTitle: r.vacancyTitle ?? "Onbekend",
+        vacancyId: r.vacancyId ?? "",
+        agreedRate: r.agreedRate,
+        inlenersbeloning: r.inlenersbeloning,
+        startDate: r.startDate ? r.startDate.toISOString() : null,
+        createdAt: r.createdAt.toISOString(),
+      }));
+    });
   },
 
   // ─── HM Portal Methods (HM-01..06) ──────────────────────────────
