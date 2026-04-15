@@ -28,12 +28,30 @@ export type PortalCandidate = {
   appliedDate: string;
 };
 
+export type PortalPlacement = {
+  id: string;
+  candidateName: string;
+  vacancyTitle: string;
+  vacancyId: string;
+  agreedRate: string | null;
+  inlenersbeloning: boolean;
+  startDate: string | null;
+  createdAt: string;
+};
+
 // ─── Client Portal Hooks ───────────────────────────────────────
 
 export function useClientVacancies() {
   return useQuery<PortalVacancy[]>({
     queryKey: ["portal", "client", "vacancies"],
     queryFn: () => apiClient("/api/portal/client/vacancies"),
+  });
+}
+
+export function useClientPlacements() {
+  return useQuery<PortalPlacement[]>({
+    queryKey: ["portal", "client", "placements"],
+    queryFn: () => apiClient("/api/portal/client/placements"),
   });
 }
 

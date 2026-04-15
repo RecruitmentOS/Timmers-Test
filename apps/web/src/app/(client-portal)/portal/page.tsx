@@ -1,11 +1,13 @@
 "use client";
 
-import { useClientVacancies } from "@/hooks/use-portal";
+import { useClientVacancies, useClientPlacements } from "@/hooks/use-portal";
 import { PortalDashboard } from "@/components/portal-shared/portal-dashboard";
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
 
 export default function ClientPortalPage() {
   const { data: vacancies, isLoading } = useClientVacancies();
+  const { data: placements, isLoading: placementsLoading } = useClientPlacements();
 
   if (isLoading) {
     return (
@@ -44,8 +46,19 @@ export default function ClientPortalPage() {
             value: totalCandidates,
             subtitle: "Wachtend op uw beoordeling",
           },
+          {
+            title: "Plaatsingen",
+            value: placements?.length ?? 0,
+            subtitle: "Geplaatste kandidaten",
+          },
         ]}
       />
+      <Link
+        href="/portal/placements"
+        className="text-sm text-primary hover:underline"
+      >
+        Bekijk plaatsingen overzicht
+      </Link>
     </div>
   );
 }
