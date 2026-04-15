@@ -33,3 +33,4 @@ export * from "./ai-screening.js";
 export * from "./calendar.js";
 export * from "./email-templates.js";
 export * from "./placement.js";
+export * from "./room-timeline.js";
