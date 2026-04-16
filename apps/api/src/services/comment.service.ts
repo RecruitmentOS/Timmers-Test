@@ -1,5 +1,6 @@
 import { eq, and, sql } from "drizzle-orm";
 import { withTenantContext } from "../lib/with-tenant-context.js";
+import { domainEvents } from "../lib/domain-events.js";
 import { comments, activityLog, notifications } from "../db/schema/index.js";
 import { user } from "../db/schema/auth.js";
 import { getIO } from "../lib/socket.js";
@@ -96,6 +97,16 @@ export const commentService = {
         authorAvatar: author?.image ?? undefined,
       };
     });
+
+    // Broadcast domain event for room timeline sync
+    if (input.targetType === "vacancy") {
+      domainEvents.emit({
+        type: "comment.created",
+        orgId,
+        targetType: input.targetType,
+        targetId: input.targetId,
+      });
+    }
 
     // Enqueue email notification job (outside transaction)
     const mentionedIds = input.mentions ?? [];
