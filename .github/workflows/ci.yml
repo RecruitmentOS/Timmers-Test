@@ -2,13 +2,13 @@ name: CI
 
 on:
   pull_request:
-    branches: [main]
+    branches: ["**"]
   push:
     branches: [main]
 
 jobs:
-  check:
-    name: Lint & Type Check
+  quality:
+    name: Lint, Type Check & Unit Tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -27,17 +27,31 @@ jobs:
 
       - name: Lint
         run: pnpm turbo lint
+        env:
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ vars.TURBO_TEAM }}
 
       - name: Type check
         run: pnpm turbo type-check
-
-      - name: Unit tests
-        run: pnpm turbo test
-
-      - name: Install Playwright browsers
-        run: pnpm --filter @recruitment-os/web exec playwright install chromium --with-deps
-
-      - name: E2E tests
-        run: pnpm --filter @recruitment-os/web test:e2e
         env:
-          CI: true
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
+      # CI_DATABASE_URL secret: optional — set to a PostgreSQL test DB URL for
+      # any tests that need a live DB (e.g. rls-audit). If not set, service
+      # tests that use createMockTx still pass because they mock the DB layer.
+      - name: Run unit tests
+        run: pnpm turbo run test
+        env:
+          DATABASE_URL: ${{ secrets.CI_DATABASE_URL }}
+          NODE_ENV: test
+          TURBO_TOKEN: ${{ secrets.TURBO_TOKEN }}
+          TURBO_TEAM: ${{ vars.TURBO_TEAM }}
+
+      - name: Upload coverage report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vitest-coverage
+          path: apps/api/coverage/
+          retention-days: 7

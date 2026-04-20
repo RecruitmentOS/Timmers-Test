@@ -10,12 +10,16 @@
       "cache": false
     },
     "test": {
-      "dependsOn": ["^build"],
-      "outputs": ["coverage/**"]
+      "dependsOn": [],
+      "outputs": ["coverage/**"],
+      "cache": true,
+      "env": ["DATABASE_URL", "NODE_ENV"]
     },
     "test:e2e": {
-      "dependsOn": ["build"],
-      "outputs": []
+      "dependsOn": [],
+      "outputs": ["playwright-report/**", "test-results/**"],
+      "cache": false,
+      "env": ["E2E_BASE_URL", "E2E_SKIP_WEBSERVER", "E2E_PORT", "E2E_HAS_SEED", "CI"]
     },
     "lint": {},
     "type-check": {}
