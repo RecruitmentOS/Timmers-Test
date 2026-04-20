@@ -1,35 +1,43 @@
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * Phase 2 Playwright config.
+ * Phase 09 Playwright config (plan 09-04).
  *
- * The only test right now is the mandatory pipeline drag-end smoke test
- * (02-CONTEXT.md line 36). It intercepts the API and verifies that a
- * pointer drag over a card triggers the stage move mutation — our
- * regression guard for adopting pre-1.0 `@dnd-kit/react@0.3.2`.
+ * Runs the 8 critical user-flow specs under tests/e2e/flows/.
+ *
+ * Runtime knobs:
+ *   - E2E_PORT (default 3002 to match apps/web dev script)
+ *   - E2E_BASE_URL (overrides full URL)
+ *   - E2E_SKIP_WEBSERVER=1 to test against already-running server
  */
+const PORT = Number(process.env.E2E_PORT ?? 3002);
+const BASE_URL = process.env.E2E_BASE_URL ?? `http://localhost:${PORT}`;
+
 export default defineConfig({
-  testDir: "./tests/e2e",
-  timeout: 60_000,
-  fullyParallel: false,
-  retries: process.env.CI ? 3 : 2,
-  reporter: "line",
+  testDir: "./tests/e2e/flows",
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 2 : undefined,
+  reporter: process.env.CI
+    ? [["github"], ["html", { open: "never" }]]
+    : [["list"], ["html", { open: "never" }]],
   use: {
-    baseURL: "http://localhost:3002",
-    trace: "retain-on-failure",
+    baseURL: BASE_URL,
+    trace: "on-first-retry",
+    screenshot: "only-on-failure",
     video: "retain-on-failure",
   },
   projects: [
-    {
-      name: "chromium",
-      use: { ...devices["Desktop Chrome"] },
-    },
+    { name: "chromium", use: { ...devices["Desktop Chrome"] } },
   ],
   webServer: {
-    command: "pnpm dev",
-    url: "http://localhost:3002",
+    command: process.env.E2E_SKIP_WEBSERVER
+      ? "echo 'skipping webServer'"
+      : "pnpm dev",
+    url: BASE_URL,
     reuseExistingServer: !process.env.CI,
-    timeout: 180_000,
+    timeout: 120_000,
     stdout: "pipe",
     stderr: "pipe",
   },
