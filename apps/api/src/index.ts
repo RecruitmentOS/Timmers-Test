@@ -49,6 +49,7 @@ import { registerJobHandlers } from "./jobs/job-handlers.js";
 import { initSocketIO } from "./lib/socket.js";
 import { Sentry } from "./instrument.js";
 import { publicLimiter } from "./middleware/rate-limit.middleware.js";
+import { sendAlert } from "./lib/alert.js";
 import { db } from "./db/index.js";
 import { sql } from "drizzle-orm";
 
@@ -174,6 +175,11 @@ app.route("/api/intake/metrics", intakeMetricsRoutes);
 // Sentry error handler — captures unhandled errors
 app.onError((err, c) => {
   Sentry.captureException(err);
+  // Fire-and-forget webhook alert — never await (don't block the response),
+  // never throw (sendAlert swallows internally).
+  void sendAlert(
+    `[api] unhandled error on ${c.req.method} ${c.req.path}: ${err instanceof Error ? err.message : String(err)}`,
+  );
   return c.json({ error: "Internal Server Error" }, 500);
 });
 
