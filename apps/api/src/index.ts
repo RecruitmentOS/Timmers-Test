@@ -42,6 +42,7 @@ import { gdprRoutes } from "./routes/gdpr.routes.js";
 import { whatsAppWebhookRoutes } from "./routes/whatsapp-webhook.routes.js";
 import { intakeRoutes } from "./routes/intake.routes.js";
 import { intakeTemplateRoutes } from "./routes/intake-template.routes.js";
+import { intakeMetricsRoutes } from "./routes/intake-metrics.routes.js";
 import type { AppEnv } from "./lib/app-env.js";
 import { startJobQueue, getJobQueue } from "./lib/job-queue.js";
 import { registerJobHandlers } from "./jobs/job-handlers.js";
@@ -168,6 +169,7 @@ app.route("/api/gdpr", gdprRoutes);
 app.route("/api/webhooks/whatsapp", whatsAppWebhookRoutes);
 app.route("/api/intake", intakeRoutes);
 app.route("/api/intake-templates", intakeTemplateRoutes);
+app.route("/api/intake/metrics", intakeMetricsRoutes);
 
 // Sentry error handler — captures unhandled errors
 app.onError((err, c) => {

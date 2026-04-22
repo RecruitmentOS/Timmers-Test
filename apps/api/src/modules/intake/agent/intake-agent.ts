@@ -30,13 +30,20 @@ export async function processInbound(ctx: ProcessContext, deps: ProcessDeps): Pr
   });
   const messages = buildMessages(ctx.recentMessages);
 
-  const response = await deps.claude.messages.create({
-    model: "claude-sonnet-4-6",
-    max_tokens: 1024,
-    system,
-    tools: INTAKE_TOOLS,
-    messages,
-  });
+  let response: Awaited<ReturnType<typeof deps.claude.messages.create>>;
+  try {
+    response = await deps.claude.messages.create({
+      model: "claude-sonnet-4-6",
+      max_tokens: 1024,
+      system,
+      tools: INTAKE_TOOLS,
+      messages,
+    });
+  } catch (err) {
+    const Sentry = (globalThis as any).Sentry;
+    if (Sentry?.captureException) Sentry.captureException(err, { extra: { sessionId: ctx.sessionId } });
+    throw err;
+  }
 
   // Collect text + tool calls
   const texts: string[] = [];

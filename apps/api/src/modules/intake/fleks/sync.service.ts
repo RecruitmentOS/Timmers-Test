@@ -30,11 +30,18 @@ export async function syncTick(deps: SyncTickDeps): Promise<{
 
   // 1. Sync jobs (update vacancies that have fleksJobUuid)
   const jobsCursor = await storage.loadCursor(orgId, "jobs");
-  const jobsResp = await client.listJobs({
-    isArchived: false,
-    updatedAtMin: jobsCursor ?? undefined,
-    limit: 100,
-  });
+  let jobsResp: Awaited<ReturnType<typeof client.listJobs>>;
+  try {
+    jobsResp = await client.listJobs({
+      isArchived: false,
+      updatedAtMin: jobsCursor ?? undefined,
+      limit: 100,
+    });
+  } catch (err) {
+    const Sentry = (globalThis as any).Sentry;
+    if (Sentry?.captureException) Sentry.captureException(err, { extra: { orgId, entity: "jobs" } });
+    throw err;
+  }
   for (const job of jobsResp.data) {
     await storage.upsertVacancyFromFleks(orgId, {
       uuid: job.uuid,
@@ -48,13 +55,20 @@ export async function syncTick(deps: SyncTickDeps): Promise<{
   const activeVacs = await storage.findActiveIntakeVacancies(orgId);
   let newCandidates = 0;
   for (const vac of activeVacs) {
-    const resp = await client.listJobCandidates({
-      jobUUID: vac.fleksJobUuid,
-      isQualified: true,
-      isInvited: false,
-      hasActiveContract: false,
-      limit: 100,
-    });
+    let resp: Awaited<ReturnType<typeof client.listJobCandidates>>;
+    try {
+      resp = await client.listJobCandidates({
+        jobUUID: vac.fleksJobUuid,
+        isQualified: true,
+        isInvited: false,
+        hasActiveContract: false,
+        limit: 100,
+      });
+    } catch (err) {
+      const Sentry = (globalThis as any).Sentry;
+      if (Sentry?.captureException) Sentry.captureException(err, { extra: { orgId, vacancyId: vac.id, jobUUID: vac.fleksJobUuid } });
+      throw err;
+    }
     for (const cand of resp.data) {
       const known = await storage.isCandidateKnown(orgId, cand.uuid);
       if (known) continue;

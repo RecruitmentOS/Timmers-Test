@@ -147,6 +147,7 @@ export async function registerIntakeJobs(boss: PgBoss): Promise<void> {
   await boss.work("intake.process_message", async (jobs) => {
     for (const job of jobs) {
       const { sessionId } = job.data as { sessionId: string };
+      try {
 
       // Load ctx
       const [row] = await db
@@ -225,6 +226,11 @@ export async function registerIntakeJobs(boss: PgBoss): Promise<void> {
           candidatePhone: row.candPhone ?? "",
         },
       );
+      } catch (err) {
+        const Sentry = (globalThis as any).Sentry;
+        if (Sentry?.captureException) Sentry.captureException(err, { extra: { sessionId } });
+        throw err;
+      }
     }
   });
   await boss.work("intake.fleks_pushback", async (jobs) => {
