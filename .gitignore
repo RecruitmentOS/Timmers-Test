@@ -12,3 +12,7 @@ playwright-report
 playwright/.cache
 coverage/
 .worktrees
+
+# Editor / tooling state
+.claude
+.superpowers
