@@ -172,8 +172,35 @@ export const applicationService = {
 
       const [rows, totalRows] = await Promise.all([
         tx
-          .select()
+          .select({
+            id: candidateApplications.id,
+            organizationId: candidateApplications.organizationId,
+            candidateId: candidateApplications.candidateId,
+            vacancyId: candidateApplications.vacancyId,
+            currentStageId: candidateApplications.currentStageId,
+            ownerId: candidateApplications.ownerId,
+            qualificationStatus: candidateApplications.qualificationStatus,
+            sourceDetail: candidateApplications.sourceDetail,
+            assignedAgentId: candidateApplications.assignedAgentId,
+            sentToClient: candidateApplications.sentToClient,
+            createdAt: candidateApplications.createdAt,
+            updatedAt: candidateApplications.updatedAt,
+            candidate: {
+              firstName: candidates.firstName,
+              lastName: candidates.lastName,
+              email: candidates.email,
+            },
+            vacancy: {
+              title: vacancies.title,
+            },
+            stage: {
+              name: pipelineStages.name,
+            },
+          })
           .from(candidateApplications)
+          .leftJoin(candidates, eq(candidateApplications.candidateId, candidates.id))
+          .leftJoin(vacancies, eq(candidateApplications.vacancyId, vacancies.id))
+          .leftJoin(pipelineStages, eq(candidateApplications.currentStageId, pipelineStages.id))
           .where(whereClause)
           .limit(limit)
           .offset(offset)
