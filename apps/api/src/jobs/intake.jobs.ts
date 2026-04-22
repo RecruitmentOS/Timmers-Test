@@ -1,5 +1,6 @@
 import { eq, and, sql } from "drizzle-orm";
 import type { PgBoss, Job } from "pg-boss";
+import Anthropic from "@anthropic-ai/sdk";
 import { db } from "../db/index.js";
 import {
   intakeSessions, intakeMessages, intakeTemplates,
@@ -9,6 +10,9 @@ import { organization } from "../db/schema/auth.js";
 import { createTwilioSandboxGateway } from "../modules/intake/whatsapp/twilio-sandbox.js";
 import { startSession, sendReminder, sendFarewellAndClose, type StartSessionDeps } from "../modules/intake/orchestrator.js";
 import type { ReminderDeps } from "../modules/intake/orchestrator.js";
+import { processInbound } from "../modules/intake/agent/intake-agent.js";
+import { createToolExecutor } from "../modules/intake/agent/tool-executor.js";
+import { createToolStore } from "../modules/intake/agent/tool-store.js";
 
 function gw() {
   return createTwilioSandboxGateway({
@@ -137,10 +141,88 @@ export async function registerIntakeJobs(boss: PgBoss): Promise<void> {
   await boss.work("intake.no_response_farewell", async ([job]: any[]) => {
     await sendFarewellAndClose((job.data as { sessionId: string }).sessionId, deps);
   });
-  await boss.work("intake.process_message", async ([job]: any[]) => {
-    const { sessionId } = job.data as { sessionId: string };
-    // Task 18 wires this to IntakeAgent. For now log only.
-    console.log(`[intake.process_message] STUB — would invoke agent for session ${sessionId}`);
+  await boss.work("intake.process_message", async (jobs) => {
+    for (const job of jobs) {
+      const { sessionId } = job.data as { sessionId: string };
+
+      // Load ctx
+      const [row] = await db
+        .select({
+          sessionId: intakeSessions.id,
+          orgId: intakeSessions.organizationId,
+          mustHaveAnswers: intakeSessions.mustHaveAnswers,
+          niceToHaveAnswers: intakeSessions.niceToHaveAnswers,
+          stuckCounter: intakeSessions.stuckCounter,
+          candPhone: candidates.phone,
+          vacTitle: vacancies.title,
+          vacDesc: vacancies.description,
+          criteria: vacancies.qualificationCriteria,
+          clientName: clients.name,
+          tenantName: organization.name,
+        })
+        .from(intakeSessions)
+        .innerJoin(candidateApplications, eq(intakeSessions.applicationId, candidateApplications.id))
+        .innerJoin(candidates, eq(candidateApplications.candidateId, candidates.id))
+        .innerJoin(vacancies, eq(candidateApplications.vacancyId, vacancies.id))
+        .leftJoin(clients, eq(vacancies.clientId, clients.id))
+        .innerJoin(organization, eq(intakeSessions.organizationId, organization.id))
+        .where(eq(intakeSessions.id, sessionId))
+        .limit(1);
+      if (!row) continue;
+
+      // Load last 20 messages
+      const recent = await db
+        .select({ direction: intakeMessages.direction, body: intakeMessages.body })
+        .from(intakeMessages)
+        .where(eq(intakeMessages.sessionId, sessionId))
+        .orderBy(intakeMessages.sentAt)
+        .limit(20);
+
+      const claude = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY! });
+      const executor = createToolExecutor(createToolStore());
+
+      await processInbound(
+        {
+          sessionId: row.sessionId,
+          orgId: row.orgId,
+          tenantName: row.tenantName,
+          clientName: row.clientName ?? "",
+          vacancyTitle: row.vacTitle,
+          vacancyDescription: row.vacDesc ?? null,
+          criteria: (row.criteria as unknown as { mustHave: Record<string, unknown>; niceToHave: Record<string, unknown> }) ?? { mustHave: {}, niceToHave: {} },
+          mustHaveAnswers: (row.mustHaveAnswers as Record<string, unknown>) ?? {},
+          niceToHaveAnswers: (row.niceToHaveAnswers as Record<string, unknown>) ?? {},
+          stuckCounter: (row.stuckCounter as Record<string, number>) ?? {},
+          recentMessages: recent.map((m) => ({
+            direction: m.direction as "inbound" | "outbound",
+            body: m.body,
+          })),
+        },
+        {
+          claude,
+          sendWhatsApp: (input) => gw().send(input),
+          persistOutbound: async ({ sessionId: sid, body, twilioSid, toolCalls }) => {
+            await db.insert(intakeMessages).values({
+              organizationId: row.orgId,
+              sessionId: sid,
+              direction: "outbound",
+              body,
+              twilioSid,
+              isFromBot: true,
+              toolCalls: toolCalls ?? null,
+            });
+          },
+          applyToolCalls: executor,
+          setSessionInProgress: async (sid) => {
+            await db
+              .update(intakeSessions)
+              .set({ state: "in_progress" })
+              .where(eq(intakeSessions.id, sid));
+          },
+          candidatePhone: row.candPhone ?? "",
+        },
+      );
+    }
   });
   console.log("[jobs] registered intake.start");
   console.log("[jobs] registered intake.reminder_24h, reminder_72h, farewell, process_message");
