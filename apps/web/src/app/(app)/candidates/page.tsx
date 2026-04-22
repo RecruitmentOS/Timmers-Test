@@ -13,6 +13,7 @@ import { CandidateListTable } from "@/components/candidates/candidate-list-table
 import { BulkActionToolbar, type BulkMode } from "@/components/candidates/bulk-action-toolbar";
 import { BulkConfirmationModal } from "@/components/candidates/bulk-confirmation-modal";
 import { SelectAllMatchingBanner } from "@/components/candidates/select-all-matching-banner";
+import { CandidateKanban } from "./components/candidate-kanban";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,7 @@ import {
   MapPin,
   Calendar,
   Briefcase,
+  Columns3,
 } from "lucide-react";
 import { EmptyState } from "@/components/empty-state";
 import { useVacancies } from "@/hooks/use-vacancies";
@@ -42,7 +44,7 @@ import { cn } from "@/lib/utils";
 
 const PAGE_SIZE = 50;
 
-type View = "table" | "cards";
+type View = "table" | "cards" | "pipeline";
 type PipelineStage = { id: string; name: string };
 type OrgUser = { id: string; name: string };
 
@@ -281,30 +283,23 @@ export default function CandidatesPage() {
         )}
 
         <div className="ml-auto flex rounded-full border bg-muted p-0.5">
-          <button
-            onClick={() => setView("table")}
-            className={cn(
-              "flex items-center gap-1.5 rounded-full px-3.5 py-1 text-sm font-medium transition-all",
-              view === "table"
-                ? "bg-background shadow text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <List className="h-3.5 w-3.5" />
-            Tabel
-          </button>
-          <button
-            onClick={() => setView("cards")}
-            className={cn(
-              "flex items-center gap-1.5 rounded-full px-3.5 py-1 text-sm font-medium transition-all",
-              view === "cards"
-                ? "bg-background shadow text-foreground"
-                : "text-muted-foreground hover:text-foreground"
-            )}
-          >
-            <LayoutGrid className="h-3.5 w-3.5" />
-            Kaarten
-          </button>
+          {(["table", "cards", "pipeline"] as const).map((v) => (
+            <button
+              key={v}
+              onClick={() => setView(v)}
+              className={cn(
+                "flex items-center gap-1.5 rounded-full px-3.5 py-1 text-sm font-medium transition-all",
+                view === v
+                  ? "bg-background shadow text-foreground"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              {v === "table" && <List className="h-3.5 w-3.5" />}
+              {v === "cards" && <LayoutGrid className="h-3.5 w-3.5" />}
+              {v === "pipeline" && <Columns3 className="h-3.5 w-3.5" />}
+              {v === "table" ? "Tabel" : v === "cards" ? "Kaarten" : "Pijplijn"}
+            </button>
+          ))}
         </div>
       </div>
 
@@ -329,7 +324,17 @@ export default function CandidatesPage() {
       )}
 
       {/* Content */}
-      {view === "cards" ? (
+      {view === "pipeline" ? (
+        isLoading && rows.length === 0 ? (
+          <div className="flex gap-4 overflow-x-auto pb-4">
+            {Array.from({ length: 4 }).map((_, i) => (
+              <div key={i} className="h-64 w-72 min-w-[272px] animate-pulse rounded-xl border bg-muted" />
+            ))}
+          </div>
+        ) : (
+          <CandidateKanban stages={availableStages} rows={rows} />
+        )
+      ) : view === "cards" ? (
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {isLoading && rows.length === 0
             ? Array.from({ length: 6 }).map((_, i) => (
