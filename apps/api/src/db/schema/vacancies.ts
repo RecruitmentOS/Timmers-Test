@@ -7,6 +7,7 @@ import {
   timestamp,
   jsonb,
   pgEnum,
+  boolean,
 } from "drizzle-orm/pg-core";
 import { tenantRlsPolicies } from "./rls-helpers.js";
 import { user } from "./auth.js";
@@ -49,6 +50,8 @@ export const vacancies = pgTable(
     requiredLicenses: jsonb("required_licenses"),
     distributionChannels: jsonb("distribution_channels"),
     hourlyRate: numeric("hourly_rate", { precision: 8, scale: 2 }),
+    intakeEnabled: boolean("intake_enabled").notNull().default(false),
+    fleksJobUuid: text("fleks_job_uuid"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
     deletedAt: timestamp("deleted_at"),

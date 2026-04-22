@@ -22,3 +22,5 @@ export * from "./ai-usage.js";
 export * from "./calendar-connections.js";
 export * from "./interviews.js";
 export * from "./external-integrations.js";
+export * from "./intake.js";
+export * from "./fleks-sync.js";
