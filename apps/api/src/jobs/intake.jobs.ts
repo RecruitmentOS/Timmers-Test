@@ -1,4 +1,4 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, sql } from "drizzle-orm";
 import type { PgBoss, Job } from "pg-boss";
 import { db } from "../db/index.js";
 import {
@@ -7,7 +7,8 @@ import {
 } from "../db/schema/index.js";
 import { organization } from "../db/schema/auth.js";
 import { createTwilioSandboxGateway } from "../modules/intake/whatsapp/twilio-sandbox.js";
-import { startSession, type StartSessionDeps } from "../modules/intake/orchestrator.js";
+import { startSession, sendReminder, sendFarewellAndClose, type StartSessionDeps } from "../modules/intake/orchestrator.js";
+import type { ReminderDeps } from "../modules/intake/orchestrator.js";
 
 function gw() {
   return createTwilioSandboxGateway({
@@ -17,7 +18,7 @@ function gw() {
   });
 }
 
-export function createIntakeDeps(boss: PgBoss): StartSessionDeps {
+export function createIntakeDeps(boss: PgBoss): StartSessionDeps & ReminderDeps {
   return {
     async loadSessionContext(sessionId) {
       const [row] = await db
@@ -89,6 +90,30 @@ export function createIntakeDeps(boss: PgBoss): StartSessionDeps {
     async scheduleReminder({ sessionId, afterSeconds, variant }) {
       await boss.send(`intake.${variant}`, { sessionId }, { startAfter: afterSeconds });
     },
+    async getSessionState(sessionId) {
+      const [row] = await db
+        .select({
+          state: intakeSessions.state,
+          lastInboundAt: intakeSessions.lastInboundAt,
+          createdAt: intakeSessions.createdAt,
+        })
+        .from(intakeSessions)
+        .where(eq(intakeSessions.id, sessionId))
+        .limit(1);
+      return row ?? null;
+    },
+    async finalizeVerdict(sessionId, status, reason) {
+      await db
+        .update(intakeSessions)
+        .set({ state: "completed", verdict: status, verdictReason: reason, completedAt: new Date() })
+        .where(eq(intakeSessions.id, sessionId));
+      await boss.send("intake.fleks_pushback", { sessionId });
+    },
+    async incrementReminderCount(sessionId) {
+      await db.execute(
+        sql`UPDATE intake_sessions SET reminder_count = reminder_count + 1 WHERE id = ${sessionId}`,
+      );
+    },
   };
 }
 
@@ -103,5 +128,20 @@ export async function registerIntakeJobs(boss: PgBoss): Promise<void> {
       await startSession(sessionId, deps);
     }
   );
+  await boss.work("intake.reminder_24h", async ([job]: any[]) => {
+    await sendReminder((job.data as { sessionId: string }).sessionId, "reminder_24h", deps);
+  });
+  await boss.work("intake.reminder_72h", async ([job]: any[]) => {
+    await sendReminder((job.data as { sessionId: string }).sessionId, "reminder_72h", deps);
+  });
+  await boss.work("intake.no_response_farewell", async ([job]: any[]) => {
+    await sendFarewellAndClose((job.data as { sessionId: string }).sessionId, deps);
+  });
+  await boss.work("intake.process_message", async ([job]: any[]) => {
+    const { sessionId } = job.data as { sessionId: string };
+    // Task 18 wires this to IntakeAgent. For now log only.
+    console.log(`[intake.process_message] STUB — would invoke agent for session ${sessionId}`);
+  });
   console.log("[jobs] registered intake.start");
+  console.log("[jobs] registered intake.reminder_24h, reminder_72h, farewell, process_message");
 }
