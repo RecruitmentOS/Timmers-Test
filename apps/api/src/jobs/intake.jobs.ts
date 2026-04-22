@@ -5,7 +5,39 @@ import { db } from "../db/index.js";
 import {
   intakeSessions, intakeMessages, intakeTemplates,
   candidateApplications, candidates, vacancies, clients,
+  activityLog,
 } from "../db/schema/index.js";
+
+/**
+ * Synthetic actor ID used for activity log rows emitted by the intake bot.
+ * This is a well-known UUID that does NOT correspond to a real user row —
+ * it's stored as plain text because the FK is on `text actor_id`. If a
+ * future migration adds a system-bot user row, this constant stays the same.
+ * Inserts are wrapped in try/catch so a missing FK row never crashes jobs.
+ */
+const SYSTEM_BOT_ACTOR_ID = "00000000-0000-0000-0000-000000000000";
+
+async function emitIntakeActivity(
+  orgId: string,
+  applicationId: string,
+  action: string,
+  meta: Record<string, unknown>,
+): Promise<void> {
+  try {
+    await db.insert(activityLog).values({
+      organizationId: orgId,
+      entityType: "application",
+      entityId: applicationId,
+      action,
+      actorId: SYSTEM_BOT_ACTOR_ID,
+      metadata: meta,
+    });
+  } catch {
+    // FK violation (system bot user not in user table) — log and continue.
+    // Activity log is best-effort for bot events; do not crash the job.
+    console.warn(`[intake] activity_log insert skipped for action=${action} appId=${applicationId}`);
+  }
+}
 import { organization } from "../db/schema/auth.js";
 import { externalIntegrations } from "../db/schema/external-integrations.js";
 import { createTwilioSandboxGateway } from "../modules/intake/whatsapp/twilio-sandbox.js";
@@ -115,6 +147,31 @@ export function createIntakeDeps(boss: PgBoss): StartSessionDeps & ReminderDeps 
         .set({ state: "completed", verdict: status, verdictReason: reason, completedAt: new Date() })
         .where(eq(intakeSessions.id, sessionId));
       await boss.send("intake.fleks_pushback", { sessionId });
+
+      // Emit activity_log row for Room Timeline (forward-compatible with vacancy-room feature).
+      const [sess] = await db
+        .select({
+          orgId: intakeSessions.organizationId,
+          applicationId: intakeSessions.applicationId,
+          vacancyId: candidateApplications.vacancyId,
+        })
+        .from(intakeSessions)
+        .innerJoin(candidateApplications, eq(intakeSessions.applicationId, candidateApplications.id))
+        .where(eq(intakeSessions.id, sessionId))
+        .limit(1);
+      if (sess) {
+        const action = status === "qualified"
+          ? "intake_qualified"
+          : status === "rejected"
+          ? "intake_rejected"
+          : "intake_unsure";
+        await emitIntakeActivity(sess.orgId, sess.applicationId, action, {
+          sessionId,
+          vacancyId: sess.vacancyId,
+          verdict: status,
+          verdictReason: reason ?? null,
+        });
+      }
     },
     async incrementReminderCount(sessionId) {
       await db.execute(
@@ -222,10 +279,47 @@ export async function registerIntakeJobs(boss: PgBoss): Promise<void> {
               .update(intakeSessions)
               .set({ state: "in_progress" })
               .where(eq(intakeSessions.id, sid));
+            // Emit activity_log for Room Timeline (intake_started).
+            const [appRow] = await db
+              .select({
+                applicationId: intakeSessions.applicationId,
+                vacancyId: candidateApplications.vacancyId,
+              })
+              .from(intakeSessions)
+              .innerJoin(candidateApplications, eq(intakeSessions.applicationId, candidateApplications.id))
+              .where(eq(intakeSessions.id, sid))
+              .limit(1);
+            if (appRow) {
+              await emitIntakeActivity(row.orgId, appRow.applicationId, "intake_started", {
+                sessionId: sid,
+                vacancyId: appRow.vacancyId,
+              });
+            }
           },
           candidatePhone: row.candPhone ?? "",
         },
       );
+
+      // After processInbound, check if the session was escalated to a human.
+      // The tool-store sets state=awaiting_human directly; we emit the activity log here.
+      const [postState] = await db
+        .select({
+          state: intakeSessions.state,
+          applicationId: intakeSessions.applicationId,
+          verdictReason: intakeSessions.verdictReason,
+          vacancyId: candidateApplications.vacancyId,
+        })
+        .from(intakeSessions)
+        .innerJoin(candidateApplications, eq(intakeSessions.applicationId, candidateApplications.id))
+        .where(eq(intakeSessions.id, sessionId))
+        .limit(1);
+      if (postState?.state === "awaiting_human") {
+        await emitIntakeActivity(row.orgId, postState.applicationId, "intake_escalated", {
+          sessionId,
+          vacancyId: postState.vacancyId,
+          reason: postState.verdictReason ?? "unknown",
+        });
+      }
       } catch (err) {
         const Sentry = (globalThis as any).Sentry;
         if (Sentry?.captureException) Sentry.captureException(err, { extra: { sessionId } });
