@@ -7,6 +7,18 @@ const withNextIntl = createNextIntlPlugin();
 const nextConfig: NextConfig = {
   output: "standalone",
   transpilePackages: ["@recruitment-os/types", "@recruitment-os/permissions"],
+  webpack: (config) => {
+    config.watchOptions = {
+      ...config.watchOptions,
+      ignored: [
+        "**/node_modules/**",
+        "**/.git/**",
+        "**/.claude/worktrees/**",
+        "**/.worktrees/**",
+      ],
+    };
+    return config;
+  },
 };
 
 export default withSentryConfig(withNextIntl(nextConfig), {
