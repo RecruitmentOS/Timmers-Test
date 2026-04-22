@@ -16,6 +16,7 @@ import { registerBillingJobs } from "./billing-jobs.js";
 import { registerMetaInsightsJobs } from "./meta-insights-sync.js";
 import { registerBackupJob } from "./backup.job.js";
 import { registerDataRetentionJob } from "./data-retention.job.js";
+import { registerFleksSyncJob } from "./fleks-sync.job.js";
 
 type OverdueReminderData = { taskId: string; orgId: string };
 type GeocodeCandidateData = { orgId: string; candidateId: string; city: string };
@@ -248,4 +249,7 @@ export async function registerJobHandlers(): Promise<void> {
 
   // Register GDPR data retention check (03:00 UTC daily)
   await registerDataRetentionJob(boss);
+
+  // Register Fleks sync jobs (fan-out every 5 min + per-org tick worker)
+  await registerFleksSyncJob(boss);
 }
