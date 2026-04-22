@@ -105,7 +105,7 @@ app.use("/api/public/*", publicLimiter);
 app.use("/api/auth/*", publicLimiter);
 
 // Better Auth handler — must be before auth middleware
-app.on(["POST", "GET"], "/api/auth/**", (c) => {
+app.on(["POST", "GET"], "/api/auth/*", (c) => {
   return auth.handler(c.req.raw);
 });
 

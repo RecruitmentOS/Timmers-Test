@@ -1,8 +1,4 @@
-import dynamic from "next/dynamic";
-
-const CookieConsent = dynamic(() => import("@/components/cookie-consent"), {
-  ssr: false,
-});
+import CookieConsent from "@/components/cookie-consent";
 
 export default function AuthLayout({
   children,
