@@ -25,6 +25,7 @@ const updateVacancySchema = z.object({
   status: z.enum(["draft", "active", "paused", "closed", "archived"]).optional(),
   clientId: z.string().uuid().nullable().optional(),
   qualificationCriteria: z.any().optional(),
+  intakeEnabled: z.boolean().optional(),
   hourlyRate: z.number().positive().nullable().optional(),
 });
 

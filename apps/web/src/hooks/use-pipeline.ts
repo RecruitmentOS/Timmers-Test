@@ -35,6 +35,7 @@ export type PipelineCard = {
 export type PipelineStage = {
   id: string;
   name: string;
+  slug: string;
   sortOrder: number;
   applications: PipelineCard[];
 };

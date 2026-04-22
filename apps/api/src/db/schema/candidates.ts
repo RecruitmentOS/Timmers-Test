@@ -2,6 +2,7 @@ import {
   pgTable,
   uuid,
   varchar,
+  text,
   numeric,
   timestamp,
 } from "drizzle-orm/pg-core";
@@ -31,6 +32,7 @@ export const candidates = pgTable(
     availabilityType: varchar("availability_type", { length: 30 }),
     availabilityStartDate: timestamp("availability_start_date"),
     contractType: varchar("contract_type", { length: 30 }),
+    fleksEmployeeUuid: text("fleks_employee_uuid"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
     deletedAt: timestamp("deleted_at"),

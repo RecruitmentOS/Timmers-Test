@@ -20,7 +20,9 @@ import { vacancies } from "../schema/vacancies.js";
 import { candidates } from "../schema/candidates.js";
 import { candidateApplications } from "../schema/applications.js";
 import { taskAutoRules } from "../schema/tasks.js";
+import { intakeTemplates } from "../schema/intake.js";
 import { withTenantContext } from "../../lib/with-tenant-context.js";
+import { DEFAULT_INTAKE_TEMPLATES } from "./intake-templates.js";
 
 async function seed() {
   console.log("Seeding database...");
@@ -376,6 +378,61 @@ async function seed() {
     }
 
     console.log("  Created seeded task_auto_rules (per mode templates)");
+  });
+
+  // Seed default intake templates (idempotent: unique on organizationId + variant + locale)
+  await withTenantContext(orgId, async (tx) => {
+    for (const tmpl of DEFAULT_INTAKE_TEMPLATES) {
+      await tx
+        .insert(intakeTemplates)
+        .values({
+          organizationId: orgId,
+          variant: tmpl.variant,
+          locale: tmpl.locale,
+          name: tmpl.name,
+          body: tmpl.body,
+        })
+        .onConflictDoNothing();
+    }
+    console.log("  Seeded 4 default intake templates");
+  });
+
+  // Seed 3 new pipeline stages for the intake flow
+  // sortOrder: fleks_intake=-10 (before "New" at 0), qualified=45 (between "Interview" at 6
+  // and "Hired" at 7 in logical flow but needs its own slot), rejected_by_bot=99 (terminal)
+  // Note: a "Qualified" stage (slug: qualified, sortOrder: 4) already exists from the default
+  // seed. The qualified entry below uses a different slug so it's additive; fleks_intake and
+  // rejected_by_bot are new. onConflictDoNothing is a no-op here (no slug unique constraint)
+  // so we check by slug before inserting.
+  await withTenantContext(orgId, async (tx) => {
+    const NEW_STAGES = [
+      { slug: "fleks_intake", name: "Fleks Intake", sortOrder: -10, isDefault: false },
+      { slug: "qualified_intake", name: "Qualified", sortOrder: 45, isDefault: false },
+      { slug: "rejected_by_bot", name: "Rejected by Bot", sortOrder: 99, isDefault: false },
+    ];
+
+    const existingStages = await tx.select().from(pipelineStages);
+    const existingSlugs = new Set(existingStages.map((s) => s.slug));
+
+    let seededCount = 0;
+    for (const s of NEW_STAGES) {
+      if (!existingSlugs.has(s.slug)) {
+        await tx.insert(pipelineStages).values({
+          organizationId: orgId,
+          slug: s.slug,
+          name: s.name,
+          sortOrder: s.sortOrder,
+          isDefault: s.isDefault,
+        });
+        seededCount++;
+      }
+    }
+
+    if (seededCount > 0) {
+      console.log(`  Seeded ${seededCount} new pipeline stages for intake flow`);
+    } else {
+      console.log("  Intake pipeline stages already exist, skipping");
+    }
   });
 
   console.log("\nSeed complete!");

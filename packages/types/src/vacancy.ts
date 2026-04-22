@@ -57,6 +57,7 @@ export interface UpdateVacancyInput {
   status?: VacancyStatus;
   clientId?: string | null;
   qualificationCriteria?: unknown;
+  intakeEnabled?: boolean;
   slug?: string;
   requiredLicenses?: string[];
   distributionChannels?: Record<string, boolean>;

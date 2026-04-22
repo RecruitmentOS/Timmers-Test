@@ -12,6 +12,7 @@
 
 import { DragDropProvider } from "@dnd-kit/react";
 import { useState } from "react";
+import { useQuery } from "@tanstack/react-query";
 import {
   usePipeline,
   useMoveStage,
@@ -27,6 +28,7 @@ import { useLiveCursors } from "@/hooks/use-live-cursors";
 import { LiveCursorsLayer } from "./live-cursors-layer";
 import { EmptyState } from "@/components/empty-state";
 import { Columns3 } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
 
 type Props = {
   vacancyId: string;
@@ -42,6 +44,15 @@ export function PipelineBoard({ vacancyId, filters, compact }: Props) {
   const { data: board, isLoading, error } = usePipeline(vacancyId, filters);
   const moveStage = useMoveStage(vacancyId);
   const isEmployer = useIsEmployer();
+
+  // Intake activity badge — polled every 30s, rendered on the fleks_intake column.
+  const { data: intakeStats } = useQuery<{ active: number; awaiting_human: number }>({
+    queryKey: ["vacancy-intake-stats", vacancyId],
+    queryFn: () => apiClient(`/api/intake/metrics/summary`),
+    refetchInterval: 30_000,
+    // Only fetch if there's a fleks_intake stage visible (forward-compatible guard).
+    enabled: !!board?.stages.some((s) => s.slug === "fleks_intake"),
+  });
   // Realtime: subscribe to pipeline updates from other users
   usePipelineSync(vacancyId);
   // Live cursors: show other users' cursor positions
@@ -107,18 +118,31 @@ export function PipelineBoard({ vacancyId, filters, compact }: Props) {
           data-testid="pipeline-board"
           onMouseMove={(e) => emitMove(e.nativeEvent)}
         >
-          {board.stages.map((stage) => (
-            <PipelineColumn
-              key={stage.id}
-              stage={stage}
-              labelOverride={
-                isEmployer && stage.name === "Sent to client"
-                  ? "Sent to hiring manager"
-                  : undefined
-              }
-              onCardClick={setSelectedCard}
-            />
-          ))}
+          {board.stages.map((stage) => {
+            const isIntakeColumn = stage.slug === "fleks_intake";
+            const activeCount = isIntakeColumn && intakeStats
+              ? (intakeStats.active ?? 0) + (intakeStats.awaiting_human ?? 0)
+              : 0;
+            return (
+              <PipelineColumn
+                key={stage.id}
+                stage={stage}
+                labelOverride={
+                  isEmployer && stage.name === "Sent to client"
+                    ? "Sent to hiring manager"
+                    : undefined
+                }
+                onCardClick={setSelectedCard}
+                headerBadge={
+                  isIntakeColumn && activeCount > 0 ? (
+                    <span className="inline-flex items-center rounded-full border border-amber-400 bg-amber-50 px-2 py-0.5 text-xs font-medium text-amber-700">
+                      {activeCount} lopend
+                    </span>
+                  ) : undefined
+                }
+              />
+            );
+          })}
           {cursors.size > 0 && <LiveCursorsLayer cursors={cursors} />}
         </div>
       </DragDropProvider>

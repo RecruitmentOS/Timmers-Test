@@ -24,12 +24,17 @@ type Props = {
    */
   labelOverride?: string;
   onCardClick: (card: CardType) => void;
+  /**
+   * Optional badge rendered in the column header (e.g. intake activity counter).
+   */
+  headerBadge?: React.ReactNode;
 };
 
 export function PipelineColumn({
   stage,
   labelOverride,
   onCardClick,
+  headerBadge,
 }: Props) {
   const { ref, isDropTarget } = useDroppable({
     id: stage.id,
@@ -49,9 +54,12 @@ export function PipelineColumn({
       }`}
     >
       <div className="flex items-center justify-between px-1 py-2">
-        <h3 className="text-sm font-semibold text-slate-700">
-          {labelOverride ?? stage.name}
-        </h3>
+        <div className="flex items-center gap-2">
+          <h3 className="text-sm font-semibold text-slate-700">
+            {labelOverride ?? stage.name}
+          </h3>
+          {headerBadge}
+        </div>
         <span className="text-xs text-slate-500">
           {stage.applications.length}
         </span>

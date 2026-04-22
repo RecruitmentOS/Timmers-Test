@@ -11,6 +11,10 @@ import {
   UserPlus,
   ThumbsUp,
   ThumbsDown,
+  MessageSquareReply,
+  XCircle,
+  HelpCircle,
+  AlertTriangle,
 } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { getDateLocale } from "@/lib/date-locale";
@@ -79,6 +83,11 @@ const EVENT_ICONS: Record<string, React.ComponentType<{ className?: string }>> =
   stage_changed: ArrowRight,
   qualified: CheckCircle2,
   assigned: UserPlus,
+  intake_started: MessageSquareReply,
+  intake_qualified: CheckCircle2,
+  intake_rejected: XCircle,
+  intake_unsure: HelpCircle,
+  intake_escalated: AlertTriangle,
 };
 
 const EVENT_LABELS: Record<string, (meta: Record<string, unknown>) => string> = {
@@ -95,6 +104,11 @@ const EVENT_LABELS: Record<string, (meta: Record<string, unknown>) => string> = 
     `feedback: ${(meta.feedbackThumb as string) === "up" ? "positief" : "negatief"}`,
   hm_request: () => "verzoek om meer kandidaten",
   created: () => "aangemaakt",
+  intake_started: () => "intake gestart via WhatsApp",
+  intake_qualified: () => "gekwalificeerd door bot",
+  intake_rejected: () => "afgewezen door bot",
+  intake_unsure: () => "bot twijfelt — wacht op recruiter",
+  intake_escalated: (meta) => `bot escaleerde (${(meta.reason as string) ?? "onbekend"})`,
 };
 
 function EventItem({ item }: { item: RoomTimelineEvent }) {
