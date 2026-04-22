@@ -87,6 +87,42 @@ async function seed() {
     console.log("  Created admin user: admin@test.com / password123");
   }
 
+  // 2b. Create system-bot user (for automated actions like Fleks sync + intake bot)
+  // Referenced by ownerId/actorId on records created without a human actor.
+  const SYSTEM_BOT_USER_ID = "00000000-0000-0000-0000-000000000000";
+  const existingBot = await db
+    .select()
+    .from(user)
+    .where(eq(user.id, SYSTEM_BOT_USER_ID));
+
+  if (existingBot.length === 0) {
+    await db.insert(user).values({
+      id: SYSTEM_BOT_USER_ID,
+      name: "System Bot",
+      email: "system-bot@recruitment-os.internal",
+      emailVerified: true,
+    });
+    console.log("  Created system-bot user (for automated actions)");
+  } else {
+    console.log("  System-bot user already exists");
+  }
+
+  // Add system-bot as a silent member of the demo org so FK + RLS checks pass
+  const existingBotMember = await db
+    .select()
+    .from(member)
+    .where(eq(member.userId, SYSTEM_BOT_USER_ID));
+
+  if (existingBotMember.length === 0) {
+    await db.insert(member).values({
+      id: "40000000-0000-0000-0000-000000000000",
+      userId: SYSTEM_BOT_USER_ID,
+      organizationId: orgId,
+      role: "agency_admin",
+    });
+    console.log("  Added system-bot as member of demo org");
+  }
+
   // 3. Add admin as organization member (if not already)
   const existingMember = await db
     .select()
