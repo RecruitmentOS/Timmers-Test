@@ -5,7 +5,7 @@ import CookieConsent from "@/components/cookie-consent";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AppShell variant="full">
+    <AppShell variant="employer">
       <ErrorBoundary>
         {children}
       </ErrorBoundary>
