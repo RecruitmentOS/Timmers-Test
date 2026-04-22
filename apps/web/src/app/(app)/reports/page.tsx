@@ -224,7 +224,7 @@ function ReportsPageInner() {
                   cx="50%"
                   cy="50%"
                   outerRadius={70}
-                  label={(entry: { source: string; percentage: number }) =>
+                  label={(entry: any) =>
                     `${entry.source} (${entry.percentage}%)`
                   }
                 >

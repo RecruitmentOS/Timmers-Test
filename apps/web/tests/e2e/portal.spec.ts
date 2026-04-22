@@ -1,4 +1,4 @@
-import { test as base, expect, type Route } from "@playwright/test";
+import { test as base, expect, type Route, type Page } from "@playwright/test";
 import { createAuthHandler } from "./fixtures/auth";
 
 /**
@@ -45,7 +45,7 @@ const PORTAL_VACANCIES = [
 ];
 
 const test = base.extend<{
-  clientPage: Awaited<ReturnType<typeof base["page"]>>;
+  clientPage: Page;
 }>({
   clientPage: async ({ page, context }, use) => {
     // Set session cookie

@@ -20,7 +20,7 @@ export function CriteriaAiSuggest({ vacancyId, onAccept }: {
         <Sparkles className="size-4 mr-1" />
         {suggest.isPending ? "Aan het analyseren..." : "AI-check ontbrekende critical info"}
       </Button>
-      {suggest.data && (
+      {!!suggest.data && (
         <Card>
           <CardContent className="pt-4 space-y-2 text-sm">
             <p className="italic text-muted-foreground">{(suggest.data as any).reasoning}</p>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   useCreatePersonaTemplate,
@@ -113,7 +113,7 @@ export function PersonaTemplateForm({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          trigger ?? (
+          (trigger as React.ReactElement | undefined) ?? (
             <Button variant="outline" size="sm">
               Nieuw persona template
             </Button>
@@ -188,7 +188,7 @@ export function PersonaTemplateForm({
             <Label>Targeting template koppeling</Label>
             <Select
               value={selectedTargetingId}
-              onValueChange={setSelectedTargetingId}
+              onValueChange={(v) => setSelectedTargetingId(v ?? "")}
             >
               <SelectTrigger>
                 <SelectValue placeholder="Selecteer template (optioneel)" />

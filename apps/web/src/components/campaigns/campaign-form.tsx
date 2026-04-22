@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import {
   useCreateCampaign,
@@ -152,7 +152,7 @@ export function CampaignForm({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          trigger ?? (
+          (trigger as React.ReactElement | undefined) ?? (
             <Button>
               {isEdit ? "Bewerken" : "Nieuwe campagne"}
             </Button>
@@ -181,7 +181,7 @@ export function CampaignForm({
               <Select
                 value={selectedChannel}
                 onValueChange={(v) =>
-                  setValue("channel", v as CampaignChannel)
+                  setValue("channel", (v ?? "manual") as CampaignChannel)
                 }
               >
                 <SelectTrigger>
@@ -264,7 +264,7 @@ export function CampaignForm({
                 <Label>Targeting template</Label>
                 <Select
                   value={selectedTargetingId}
-                  onValueChange={setSelectedTargetingId}
+                  onValueChange={(v) => setSelectedTargetingId(v ?? "")}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecteer template" />
@@ -282,7 +282,7 @@ export function CampaignForm({
                 <Label>Persona template</Label>
                 <Select
                   value={selectedPersonaId}
-                  onValueChange={setSelectedPersonaId}
+                  onValueChange={(v) => setSelectedPersonaId(v ?? "")}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="Selecteer persona" />

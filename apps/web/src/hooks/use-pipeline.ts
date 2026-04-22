@@ -6,6 +6,7 @@ import {
   useQueryClient,
 } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
+import type { LicenseBadge } from "@recruitment-os/types";
 
 /**
  * Phase 2 pipeline board hook.
@@ -30,6 +31,8 @@ export type PipelineCard = {
   hasOverdueTask: boolean;
   aiVerdict?: "yes" | "maybe" | "no" | null;
   aiConfidence?: number | null;
+  licenseBadges?: LicenseBadge[] | null;
+  distanceKm?: number | null;
 };
 
 export type PipelineStage = {

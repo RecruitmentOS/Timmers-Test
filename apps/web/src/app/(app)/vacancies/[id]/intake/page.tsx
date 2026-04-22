@@ -50,7 +50,7 @@ export default function VacancyIntakePage() {
         vacancyId={id}
         onAccept={(s) => {
           if (s.type === "must") {
-            setCriteria((c) => ({
+            setCriteria((c: QualificationCriteria) => ({
               ...c,
               mustHave: {
                 ...c.mustHave,

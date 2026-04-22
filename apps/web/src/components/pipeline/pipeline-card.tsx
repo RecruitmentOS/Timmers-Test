@@ -103,7 +103,7 @@ export const PipelineCard = memo(function PipelineCard({
       </div>
       <div className="flex items-center gap-1 mt-1 flex-wrap">
         {application.licenseBadges && application.licenseBadges.length > 0 && (
-          <LicenseBadges badges={application.licenseBadges} compact />
+          <LicenseBadges badges={application.licenseBadges} size="sm" />
         )}
         {application.distanceKm != null && (
           <DistanceBadge distanceKm={application.distanceKm} size="sm" />

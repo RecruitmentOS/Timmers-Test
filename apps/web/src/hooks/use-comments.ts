@@ -36,7 +36,7 @@ export function useComments(
 
 export function useCreateComment() {
   const qc = useQueryClient();
-  return useMutation<Comment, Error, CreateCommentInput>({
+  return useMutation<Comment, Error, CreateCommentInput, { previous: Comment[] | undefined }>({
     mutationFn: (input: CreateCommentInput) =>
       apiClient<Comment>("/api/comments", {
         method: "POST",
@@ -111,7 +111,7 @@ export function useUpdateComment() {
 
 export function useDeleteComment() {
   const qc = useQueryClient();
-  return useMutation<{ ok: true }, Error, { id: string; targetType: string; targetId: string }>({
+  return useMutation<{ ok: true }, Error, { id: string; targetType: string; targetId: string }, { previous: Comment[] | undefined }>({
     mutationFn: ({ id }) =>
       apiClient<{ ok: true }>(`/api/comments/${id}`, {
         method: "DELETE",

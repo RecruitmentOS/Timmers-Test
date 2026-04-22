@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { useCreateTargetingTemplate } from "@/hooks/use-campaigns";
 import type { CreateTargetingTemplateInput } from "@recruitment-os/types";
@@ -107,7 +107,7 @@ export function TargetingTemplateForm({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger
         render={
-          trigger ?? (
+          (trigger as React.ReactElement | undefined) ?? (
             <Button variant="outline" size="sm">
               Nieuw targeting template
             </Button>

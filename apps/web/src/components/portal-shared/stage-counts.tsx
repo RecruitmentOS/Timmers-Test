@@ -32,12 +32,14 @@ export function StageCounts({ stages }: Props) {
           const pct = (stage.count / total) * 100;
           return (
             <Tooltip key={stage.name}>
-              <TooltipTrigger asChild>
-                <div
-                  className={`${STAGE_COLORS[i % STAGE_COLORS.length]} rounded-sm transition-all`}
-                  style={{ width: `${Math.max(pct, 4)}%` }}
-                />
-              </TooltipTrigger>
+              <TooltipTrigger
+                render={
+                  <div
+                    className={`${STAGE_COLORS[i % STAGE_COLORS.length]} rounded-sm transition-all`}
+                    style={{ width: `${Math.max(pct, 4)}%` }}
+                  />
+                }
+              />
               <TooltipContent>
                 <p className="text-xs">
                   {stage.name}: {stage.count}

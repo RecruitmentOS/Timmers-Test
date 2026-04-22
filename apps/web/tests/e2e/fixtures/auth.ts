@@ -1,4 +1,4 @@
-import { test as base, expect, type Route } from "@playwright/test";
+import { test as base, expect, type Route, type Page } from "@playwright/test";
 
 /**
  * Auth fixture for E2E tests.
@@ -90,7 +90,7 @@ function orgListHandler(organizationId: string, mode: string) {
 }
 
 export const test = base.extend<{
-  authenticatedPage: Awaited<ReturnType<typeof base["page"]>>;
+  authenticatedPage: Page;
 }>({
   authenticatedPage: async ({ page, context }, use) => {
     // 1. Set session cookie

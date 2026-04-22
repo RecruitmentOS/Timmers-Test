@@ -182,8 +182,8 @@ export function CampaignDashboard({ campaignId }: CampaignDashboardProps) {
                     cx="50%"
                     cy="50%"
                     outerRadius={80}
-                    label={({ name, value }: { name: string; value: number }) =>
-                      `${name}: ${value}`
+                    label={(entry: any) =>
+                      `${entry.name}: ${entry.value}`
                     }
                   >
                     {channelData.map((_entry, index) => (

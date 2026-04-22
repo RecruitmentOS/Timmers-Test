@@ -41,7 +41,7 @@ export function FunnelChart({ stages }: FunnelChartProps) {
         <XAxis type="number" />
         <YAxis type="category" dataKey="name" width={120} tick={{ fontSize: 12 }} />
         <Tooltip
-          formatter={(value: number, _name: string, entry: { payload: { label: string } }) => [
+          formatter={(_value: any, _name: any, entry: any) => [
             entry.payload.label,
             "Kandidaten",
           ]}

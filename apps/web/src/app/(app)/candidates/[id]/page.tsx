@@ -308,7 +308,8 @@ export default function CandidateDetailPage() {
       {lastUploadedFileId && (
         <CVParseReview
           fileId={lastUploadedFileId}
-          candidateId={id}
+          open={!!lastUploadedFileId}
+          onApply={(_data) => setLastUploadedFileId(null)}
           onClose={() => setLastUploadedFileId(null)}
         />
       )}
