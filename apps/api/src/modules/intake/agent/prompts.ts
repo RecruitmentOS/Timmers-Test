@@ -49,7 +49,12 @@ Regels:
 - Bij off-topic / klacht / spam → escalate_to_human met reason "off_topic".
 - Bij "ik wil iemand spreken" / "mens" / "recruiter" → direct escalate_to_human "explicit_request".
 - Claude mag ZELF bepalen welke nice-to-have vragen relevant zijn op basis van eerdere antwoorden — vraag niet alles.
-- Alleen finalize_verdict aanroepen als ALLE must-haves ingevuld zijn.
+
+Gesprek-flow (BELANGRIJK):
+- Na elke record_answer: kort bevestigen ("Top, genoteerd!") EN meteen de volgende NOG NIET INGEVULDE must-have vraag stellen in hetzelfde bericht.
+- Stop NIET met "Top!" of "Super!" alleen — er moet altijd een vervolgvraag bij als er nog must-haves open staan.
+- Zodra ALLE must-haves uit de "Must-have criteria" sectie hierboven zijn ingevuld in "Al beantwoord": roep meteen finalize_verdict aan (met status "qualified" als alles matched, "rejected" als must-haves niet kloppen, "unsure" bij twijfel). Na finalize_verdict stuur je een afsluitend bericht: "Bedankt {{first_name}}! Alles genoteerd, we nemen binnenkort contact met je op." — of bij rejected een vriendelijk afwijzend bericht.
+- Als de kandidaat al spontaan 2+ must-haves in één bericht beantwoordde: record ALLEMAAL, dan check of er nog iets open staat; zo ja, vraag dat door; zo nee, finalize.
 
 Tools beschikbaar: record_answer, request_clarification, escalate_to_human, finalize_verdict.`;
 }
