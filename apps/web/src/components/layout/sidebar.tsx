@@ -11,6 +11,7 @@ import {
   ListChecks,
   BarChart3,
   Megaphone,
+  MessageSquareReply,
   LogOut,
   ChevronsLeft,
 } from "lucide-react";
@@ -42,6 +43,7 @@ const FULL_NAV: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, tourId: "tour-dashboard" },
   { label: "Vacancies", href: "/vacancies", icon: Briefcase, tourId: "tour-vacatures" },
   { label: "Candidates", href: "/candidates", icon: Users, tourId: "tour-kandidaten" },
+  { label: "Intake", href: "/intake", icon: MessageSquareReply },
   { label: "Taken", href: "/tasks", icon: ListChecks },
   { label: "Clients", href: "/clients", icon: Building2 },
   { label: "Campagnes", href: "/campaigns", icon: Megaphone },
