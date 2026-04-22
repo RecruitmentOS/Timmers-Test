@@ -1,4 +1,5 @@
 import { eq, and, sql } from "drizzle-orm";
+import { withTenantContext } from "../lib/with-tenant-context.js";
 import type { PgBoss, Job } from "pg-boss";
 import Anthropic from "@anthropic-ai/sdk";
 import { db } from "../db/index.js";
@@ -59,147 +60,164 @@ function gw() {
 
 export function createIntakeDeps(boss: PgBoss): StartSessionDeps & ReminderDeps {
   return {
-    async loadSessionContext(sessionId) {
-      const [row] = await db
-        .select({
-          sessionId: intakeSessions.id,
-          orgId: intakeSessions.organizationId,
-          candFirst: candidates.firstName,
-          candLast: candidates.lastName,
-          candPhone: candidates.phone,
-          vacTitle: vacancies.title,
-          vacLoc: vacancies.location,
-          clientName: clients.name,
-          tenantName: organization.name,
-        })
-        .from(intakeSessions)
-        .innerJoin(candidateApplications, eq(intakeSessions.applicationId, candidateApplications.id))
-        .innerJoin(candidates, eq(candidateApplications.candidateId, candidates.id))
-        .innerJoin(vacancies, eq(candidateApplications.vacancyId, vacancies.id))
-        .leftJoin(clients, eq(vacancies.clientId, clients.id))
-        .innerJoin(organization, eq(intakeSessions.organizationId, organization.id))
-        .where(eq(intakeSessions.id, sessionId))
-        .limit(1);
-      if (!row) throw new Error(`session not found: ${sessionId}`);
-      return {
-        sessionId: row.sessionId,
-        orgId: row.orgId,
-        candidate: {
-          first_name: row.candFirst,
-          full_name: `${row.candFirst} ${row.candLast}`,
-          phone: row.candPhone ?? "",
-        },
-        vacancy: { title: row.vacTitle, location: row.vacLoc, start_date: null },
-        client: { name: row.clientName ?? "" },
-        tenant: { name: row.tenantName },
-        recruiter: { name: "Team", phone: "" },
-      };
+    async loadSessionContext(orgId, sessionId) {
+      return withTenantContext(orgId, async (tx) => {
+        const [row] = await tx
+          .select({
+            sessionId: intakeSessions.id,
+            orgId: intakeSessions.organizationId,
+            candFirst: candidates.firstName,
+            candLast: candidates.lastName,
+            candPhone: candidates.phone,
+            vacTitle: vacancies.title,
+            vacLoc: vacancies.location,
+            clientName: clients.name,
+            tenantName: organization.name,
+          })
+          .from(intakeSessions)
+          .innerJoin(candidateApplications, eq(intakeSessions.applicationId, candidateApplications.id))
+          .innerJoin(candidates, eq(candidateApplications.candidateId, candidates.id))
+          .innerJoin(vacancies, eq(candidateApplications.vacancyId, vacancies.id))
+          .leftJoin(clients, eq(vacancies.clientId, clients.id))
+          .innerJoin(
+            organization,
+            sql`${intakeSessions.organizationId}::text = ${organization.id}`,
+          )
+          .where(eq(intakeSessions.id, sessionId))
+          .limit(1);
+        if (!row) throw new Error(`session not found: ${sessionId}`);
+        return {
+          sessionId: row.sessionId,
+          orgId: row.orgId,
+          candidate: {
+            first_name: row.candFirst,
+            full_name: `${row.candFirst} ${row.candLast}`,
+            phone: row.candPhone ?? "",
+          },
+          vacancy: { title: row.vacTitle, location: row.vacLoc, start_date: null },
+          client: { name: row.clientName ?? "" },
+          tenant: { name: row.tenantName },
+          recruiter: { name: "Team", phone: "" },
+        };
+      });
     },
     async loadTemplate(orgId, variant, locale = "nl") {
-      const [tmpl] = await db
-        .select({ body: intakeTemplates.body })
-        .from(intakeTemplates)
-        .where(and(
-          eq(intakeTemplates.organizationId, orgId),
-          eq(intakeTemplates.variant, variant),
-          eq(intakeTemplates.locale, locale),
-          eq(intakeTemplates.isActive, true),
-        ))
-        .limit(1);
-      if (!tmpl) throw new Error(`template not found: ${variant}/${locale}`);
-      return tmpl;
+      return withTenantContext(orgId, async (tx) => {
+        const [tmpl] = await tx
+          .select({ body: intakeTemplates.body })
+          .from(intakeTemplates)
+          .where(and(
+            eq(intakeTemplates.organizationId, orgId),
+            eq(intakeTemplates.variant, variant),
+            eq(intakeTemplates.locale, locale),
+            eq(intakeTemplates.isActive, true),
+          ))
+          .limit(1);
+        if (!tmpl) throw new Error(`template not found: ${variant}/${locale}`);
+        return tmpl;
+      });
     },
     async sendWhatsApp(input) { return gw().send(input); },
-    async persistOutbound({ sessionId, body, twilioSid }) {
-      const [sess] = await db
-        .select({ organizationId: intakeSessions.organizationId })
-        .from(intakeSessions)
-        .where(eq(intakeSessions.id, sessionId))
-        .limit(1);
-      if (!sess) return;
-      await db.insert(intakeMessages).values({
-        organizationId: sess.organizationId,
-        sessionId, direction: "outbound", body, twilioSid, isFromBot: true,
+    async persistOutbound({ sessionId, orgId, body, twilioSid }) {
+      await withTenantContext(orgId, async (tx) => {
+        await tx.insert(intakeMessages).values({
+          organizationId: orgId,
+          sessionId, direction: "outbound", body, twilioSid, isFromBot: true,
+        });
+        await tx
+          .update(intakeSessions)
+          .set({ lastOutboundAt: new Date() })
+          .where(eq(intakeSessions.id, sessionId));
       });
-      await db
-        .update(intakeSessions)
-        .set({ lastOutboundAt: new Date() })
-        .where(eq(intakeSessions.id, sessionId));
     },
-    async scheduleReminder({ sessionId, afterSeconds, variant }) {
-      await boss.send(`intake.${variant}`, { sessionId }, { startAfter: afterSeconds });
+    async scheduleReminder({ sessionId, orgId, afterSeconds, variant }) {
+      await boss.send(
+        `intake.${variant}`,
+        { sessionId, orgId },
+        { startAfter: afterSeconds },
+      );
     },
-    async getSessionState(sessionId) {
-      const [row] = await db
-        .select({
-          state: intakeSessions.state,
-          lastInboundAt: intakeSessions.lastInboundAt,
-          createdAt: intakeSessions.createdAt,
-        })
-        .from(intakeSessions)
-        .where(eq(intakeSessions.id, sessionId))
-        .limit(1);
-      return row ?? null;
+    async getSessionState(orgId, sessionId) {
+      return withTenantContext(orgId, async (tx) => {
+        const [row] = await tx
+          .select({
+            state: intakeSessions.state,
+            lastInboundAt: intakeSessions.lastInboundAt,
+            createdAt: intakeSessions.createdAt,
+          })
+          .from(intakeSessions)
+          .where(eq(intakeSessions.id, sessionId))
+          .limit(1);
+        return row ?? null;
+      });
     },
-    async finalizeVerdict(sessionId, status, reason) {
-      await db
-        .update(intakeSessions)
-        .set({ state: "completed", verdict: status, verdictReason: reason, completedAt: new Date() })
-        .where(eq(intakeSessions.id, sessionId));
-      await boss.send("intake.fleks_pushback", { sessionId });
-
-      // Emit activity_log row for Room Timeline (forward-compatible with vacancy-room feature).
-      const [sess] = await db
-        .select({
-          orgId: intakeSessions.organizationId,
-          applicationId: intakeSessions.applicationId,
-          vacancyId: candidateApplications.vacancyId,
-        })
-        .from(intakeSessions)
-        .innerJoin(candidateApplications, eq(intakeSessions.applicationId, candidateApplications.id))
-        .where(eq(intakeSessions.id, sessionId))
-        .limit(1);
-      if (sess) {
+    async finalizeVerdict(orgId, sessionId, status, reason) {
+      let applicationId: string | null = null;
+      let vacancyId: string | null = null;
+      await withTenantContext(orgId, async (tx) => {
+        await tx
+          .update(intakeSessions)
+          .set({ state: "completed", verdict: status, verdictReason: reason, completedAt: new Date() })
+          .where(eq(intakeSessions.id, sessionId));
+        const [sess] = await tx
+          .select({
+            applicationId: intakeSessions.applicationId,
+            vacancyId: candidateApplications.vacancyId,
+          })
+          .from(intakeSessions)
+          .innerJoin(candidateApplications, eq(intakeSessions.applicationId, candidateApplications.id))
+          .where(eq(intakeSessions.id, sessionId))
+          .limit(1);
+        applicationId = sess?.applicationId ?? null;
+        vacancyId = sess?.vacancyId ?? null;
+      });
+      await boss.send("intake.fleks_pushback", { sessionId, orgId });
+      if (applicationId) {
         const action = status === "qualified"
           ? "intake_qualified"
           : status === "rejected"
           ? "intake_rejected"
           : "intake_unsure";
-        await emitIntakeActivity(sess.orgId, sess.applicationId, action, {
+        await emitIntakeActivity(orgId, applicationId, action, {
           sessionId,
-          vacancyId: sess.vacancyId,
+          vacancyId,
           verdict: status,
           verdictReason: reason ?? null,
         });
       }
     },
-    async incrementReminderCount(sessionId) {
-      await db.execute(
-        sql`UPDATE intake_sessions SET reminder_count = reminder_count + 1 WHERE id = ${sessionId}`,
-      );
+    async incrementReminderCount(orgId, sessionId) {
+      await withTenantContext(orgId, async (tx) => {
+        await tx.execute(
+          sql`UPDATE intake_sessions SET reminder_count = reminder_count + 1 WHERE id = ${sessionId}`,
+        );
+      });
     },
   };
 }
 
-type StartData = { sessionId: string };
+type IntakeJobData = { sessionId: string; orgId: string };
 
 export async function registerIntakeJobs(boss: PgBoss): Promise<void> {
   const deps = createIntakeDeps(boss);
-  await boss.work<StartData>(
+  await boss.work<IntakeJobData>(
     "intake.start",
-    async ([job]: Job<StartData>[]) => {
-      const { sessionId } = job.data;
-      await startSession(sessionId, deps);
+    async ([job]: Job<IntakeJobData>[]) => {
+      const { sessionId, orgId } = job.data;
+      await startSession(orgId, sessionId, deps);
     }
   );
   await boss.work("intake.reminder_24h", async ([job]: any[]) => {
-    await sendReminder((job.data as { sessionId: string }).sessionId, "reminder_24h", deps);
+    const { sessionId, orgId } = job.data as IntakeJobData;
+    await sendReminder(orgId, sessionId, "reminder_24h", deps);
   });
   await boss.work("intake.reminder_72h", async ([job]: any[]) => {
-    await sendReminder((job.data as { sessionId: string }).sessionId, "reminder_72h", deps);
+    const { sessionId, orgId } = job.data as IntakeJobData;
+    await sendReminder(orgId, sessionId, "reminder_72h", deps);
   });
   await boss.work("intake.no_response_farewell", async ([job]: any[]) => {
-    await sendFarewellAndClose((job.data as { sessionId: string }).sessionId, deps);
+    const { sessionId, orgId } = job.data as IntakeJobData;
+    await sendFarewellAndClose(orgId, sessionId, deps);
   });
   await boss.work("intake.process_message", async (jobs) => {
     for (const job of jobs) {
@@ -226,7 +244,10 @@ export async function registerIntakeJobs(boss: PgBoss): Promise<void> {
         .innerJoin(candidates, eq(candidateApplications.candidateId, candidates.id))
         .innerJoin(vacancies, eq(candidateApplications.vacancyId, vacancies.id))
         .leftJoin(clients, eq(vacancies.clientId, clients.id))
-        .innerJoin(organization, eq(intakeSessions.organizationId, organization.id))
+        .innerJoin(
+          organization,
+          sql`${intakeSessions.organizationId}::text = ${organization.id}`,
+        )
         .where(eq(intakeSessions.id, sessionId))
         .limit(1);
       if (!row) continue;

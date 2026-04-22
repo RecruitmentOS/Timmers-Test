@@ -35,6 +35,48 @@ export async function startJobQueue(): Promise<PgBoss | null> {
   );
   await boss.start();
   console.log("[jobs] pg-boss started on schema 'pgboss'");
+
+  // pg-boss v12: queues must exist before workers can attach.
+  // Pre-create all known queues so boss.work() + boss.send() don't fail.
+  const KNOWN_QUEUES = [
+    // intake
+    "intake.start",
+    "intake.reminder_24h",
+    "intake.reminder_72h",
+    "intake.no_response_farewell",
+    "intake.process_message",
+    "intake.fleks_pushback",
+    // fleks sync
+    "fleks.sync-tick",
+    "fleks.sync-scheduler",
+    // geo
+    "geo.geocode_candidate",
+    "geo.geocode_vacancy",
+    // cv + docs + notifications
+    "cv.parse",
+    "send-notification-email",
+    "doc.expiry_reminder",
+    // scheduled
+    "billing.monthly-usage",
+    "billing.trial-reminder",
+    "data-retention-check",
+    "meta-insights-sync",
+    "nightly-backup",
+    // task scheduler
+    "task.overdue_reminder",
+  ];
+  for (const q of KNOWN_QUEUES) {
+    try {
+      await boss.createQueue(q);
+    } catch (err) {
+      // createQueue is idempotent in v12 but may throw on some versions
+      if (!String(err).includes("already exists")) {
+        console.warn(`[jobs] createQueue(${q}) warning:`, err);
+      }
+    }
+  }
+  console.log(`[jobs] ensured ${KNOWN_QUEUES.length} queues exist`);
+
   return boss;
 }
 
