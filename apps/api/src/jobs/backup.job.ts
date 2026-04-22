@@ -1,7 +1,62 @@
 import { execSync } from "child_process";
 import { readFileSync, unlinkSync } from "fs";
-import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import {
+  S3Client,
+  PutObjectCommand,
+  ListObjectsV2Command,
+  DeleteObjectCommand,
+  type ListObjectsV2CommandOutput,
+} from "@aws-sdk/client-s3";
 import { type PgBoss } from "pg-boss";
+
+const BACKUP_RETENTION_DAYS = Number.parseInt(
+  process.env.BACKUP_RETENTION_DAYS ?? "30",
+  10,
+);
+const BACKUP_PREFIX = process.env.BACKUP_S3_PREFIX ?? "backups/";
+
+/**
+ * Prune S3 backup objects older than the retention window.
+ * Called after each successful upload to prevent unbounded storage growth.
+ *
+ * Exported for unit testing — accepts injectable `now` so tests can pin the clock.
+ */
+export async function pruneOldBackups(
+  s3: S3Client,
+  bucket: string,
+  prefix: string = BACKUP_PREFIX,
+  retentionDays: number = BACKUP_RETENTION_DAYS,
+  now: Date = new Date(),
+): Promise<{ deleted: string[]; kept: number }> {
+  const cutoff = new Date(now.getTime() - retentionDays * 24 * 60 * 60 * 1000);
+  const deleted: string[] = [];
+  let kept = 0;
+  let ContinuationToken: string | undefined = undefined;
+
+  do {
+    const list: ListObjectsV2CommandOutput = await s3.send(
+      new ListObjectsV2Command({
+        Bucket: bucket,
+        Prefix: prefix,
+        ContinuationToken,
+      }),
+    );
+    for (const obj of list.Contents ?? []) {
+      if (!obj.Key || !obj.LastModified) continue;
+      if (obj.LastModified.getTime() < cutoff.getTime()) {
+        await s3.send(
+          new DeleteObjectCommand({ Bucket: bucket, Key: obj.Key }),
+        );
+        deleted.push(obj.Key);
+      } else {
+        kept++;
+      }
+    }
+    ContinuationToken = list.IsTruncated ? list.NextContinuationToken : undefined;
+  } while (ContinuationToken);
+
+  return { deleted, kept };
+}
 
 /**
  * Nightly database backup job — REL-03
@@ -70,6 +125,16 @@ export async function runDatabaseBackup(): Promise<void> {
     console.log(
       `[backup] Uploaded ${key} (${sizeMB} MB) to bucket ${bucket}`
     );
+
+    try {
+      const prune = await pruneOldBackups(s3, bucket);
+      console.log(
+        `[backup] pruned ${prune.deleted.length} old backups (>${BACKUP_RETENTION_DAYS}d), kept ${prune.kept}`,
+      );
+    } catch (pruneErr) {
+      // Prune failure must NOT fail the backup job — upload already succeeded.
+      console.error("[backup] prune failed (upload already persisted):", pruneErr);
+    }
   } finally {
     // Clean up temp file
     try {
