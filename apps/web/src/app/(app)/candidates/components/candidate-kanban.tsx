@@ -99,12 +99,10 @@ export function CandidateKanban({ stages, rows }: Props) {
     );
   }
 
-  const visibleStages = stages.filter((s) => (grouped.get(s.id)?.length ?? 0) > 0 || stages.length <= 6);
-
   return (
     <DragDropProvider onDragEnd={handleDragEnd as Parameters<typeof DragDropProvider>[0]["onDragEnd"]}>
       <div className="flex gap-4 overflow-x-auto pb-4 min-h-[60vh]">
-        {visibleStages.map((stage) => (
+        {stages.map((stage) => (
           <KanbanColumn
             key={stage.id}
             stage={stage}
