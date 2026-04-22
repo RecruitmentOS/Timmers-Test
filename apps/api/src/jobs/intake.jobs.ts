@@ -7,12 +7,15 @@ import {
   candidateApplications, candidates, vacancies, clients,
 } from "../db/schema/index.js";
 import { organization } from "../db/schema/auth.js";
+import { externalIntegrations } from "../db/schema/external-integrations.js";
 import { createTwilioSandboxGateway } from "../modules/intake/whatsapp/twilio-sandbox.js";
 import { startSession, sendReminder, sendFarewellAndClose, type StartSessionDeps } from "../modules/intake/orchestrator.js";
 import type { ReminderDeps } from "../modules/intake/orchestrator.js";
 import { processInbound } from "../modules/intake/agent/intake-agent.js";
 import { createToolExecutor } from "../modules/intake/agent/tool-executor.js";
 import { createToolStore } from "../modules/intake/agent/tool-store.js";
+import { createFleksClient } from "../modules/intake/fleks/client.js";
+import { decryptSecret } from "../lib/crypto.js";
 
 function gw() {
   return createTwilioSandboxGateway({
@@ -224,6 +227,40 @@ export async function registerIntakeJobs(boss: PgBoss): Promise<void> {
       );
     }
   });
+  await boss.work("intake.fleks_pushback", async (jobs) => {
+    for (const job of jobs) {
+      const { sessionId } = job.data as { sessionId: string };
+
+      const [row] = await db
+        .select({
+          orgId: intakeSessions.organizationId,
+          verdict: intakeSessions.verdict,
+          fleksEmployeeUuid: candidates.fleksEmployeeUuid,
+        })
+        .from(intakeSessions)
+        .innerJoin(candidateApplications, eq(intakeSessions.applicationId, candidateApplications.id))
+        .innerJoin(candidates, eq(candidateApplications.candidateId, candidates.id))
+        .where(eq(intakeSessions.id, sessionId))
+        .limit(1);
+      if (!row?.verdict || !row.fleksEmployeeUuid) continue;
+
+      const [integ] = await db
+        .select()
+        .from(externalIntegrations)
+        .where(eq(externalIntegrations.organizationId, row.orgId))
+        .limit(1);
+      if (!integ || !integ.apiKeyEncrypted) continue;
+
+      const apiKey = process.env.FLEKS_API_KEY ?? decryptSecret(integ.apiKeyEncrypted);
+      const client = createFleksClient({
+        apiKey,
+        baseUrl: integ.apiBaseUrl ?? "https://api.external.fleks.works",
+      });
+      const { pushVerdictToFleks } = await import("../modules/intake/pushback.service.js");
+      await pushVerdictToFleks(client, row.fleksEmployeeUuid, row.verdict as never);
+    }
+  });
   console.log("[jobs] registered intake.start");
   console.log("[jobs] registered intake.reminder_24h, reminder_72h, farewell, process_message");
+  console.log("[jobs] registered intake.fleks_pushback");
 }
