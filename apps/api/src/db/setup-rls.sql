@@ -223,3 +223,64 @@ GRANT ALL ON ai_screening_logs TO app_user;
 GRANT ALL ON calendar_connections TO app_user;
 GRANT ALL ON interviews TO app_user;
 GRANT ALL ON qualification_presets TO app_user;
+
+-- ── fleks-intake module tables ─────────────────────────────────────────
+
+-- external_integrations
+CREATE POLICY "external_integrations_tenant_select" ON "external_integrations" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "external_integrations_tenant_insert" ON "external_integrations" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "external_integrations_tenant_update" ON "external_integrations" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "external_integrations_tenant_delete" ON "external_integrations" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
+-- intake_sessions
+CREATE POLICY "intake_sessions_tenant_select" ON "intake_sessions" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "intake_sessions_tenant_insert" ON "intake_sessions" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "intake_sessions_tenant_update" ON "intake_sessions" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "intake_sessions_tenant_delete" ON "intake_sessions" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
+-- intake_messages
+CREATE POLICY "intake_messages_tenant_select" ON "intake_messages" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "intake_messages_tenant_insert" ON "intake_messages" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "intake_messages_tenant_update" ON "intake_messages" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "intake_messages_tenant_delete" ON "intake_messages" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
+-- intake_templates
+CREATE POLICY "intake_templates_tenant_select" ON "intake_templates" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "intake_templates_tenant_insert" ON "intake_templates" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "intake_templates_tenant_update" ON "intake_templates" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "intake_templates_tenant_delete" ON "intake_templates" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
+-- fleks_sync_cursors
+CREATE POLICY "fleks_sync_cursors_tenant_select" ON "fleks_sync_cursors" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "fleks_sync_cursors_tenant_insert" ON "fleks_sync_cursors" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "fleks_sync_cursors_tenant_update" ON "fleks_sync_cursors" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "fleks_sync_cursors_tenant_delete" ON "fleks_sync_cursors" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
+-- Force RLS + grants
+ALTER TABLE external_integrations FORCE ROW LEVEL SECURITY;
+ALTER TABLE intake_sessions FORCE ROW LEVEL SECURITY;
+ALTER TABLE intake_messages FORCE ROW LEVEL SECURITY;
+ALTER TABLE intake_templates FORCE ROW LEVEL SECURITY;
+ALTER TABLE fleks_sync_cursors FORCE ROW LEVEL SECURITY;
+
+GRANT ALL ON external_integrations TO app_user;
+GRANT ALL ON intake_sessions TO app_user;
+GRANT ALL ON intake_messages TO app_user;
+GRANT ALL ON intake_templates TO app_user;
+GRANT ALL ON fleks_sync_cursors TO app_user;
+
+-- pg-boss v12 auto-creates pgboss schema on startup; app_user needs the
+-- permission to do so + access to its tables/sequences afterward.
+GRANT CREATE ON DATABASE recruitment_os_dev TO app_user;
+GRANT USAGE, CREATE ON SCHEMA pgboss TO app_user;
+GRANT ALL ON ALL TABLES IN SCHEMA pgboss TO app_user;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA pgboss TO app_user;
+
+-- The WhatsApp inbound webhook must resolve intake_session by phone before
+-- any tenant context is available (webhooks aren't authed). Rather than
+-- using a dedicated service role, grant BYPASSRLS to app_user. Tenant
+-- isolation is still enforced on every HTTP request path via tenantMiddleware
+-- + withTenantContext, which SET LOCAL app.tenant_id and let RLS filter.
+-- BYPASSRLS only kicks in when app.tenant_id is unset (webhooks + jobs
+-- that haven't yet looked up their orgId).
+ALTER ROLE app_user BYPASSRLS;
