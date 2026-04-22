@@ -47,7 +47,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Skeleton } from "@/components/ui/skeleton";
-import { MapPin, Calendar, UserPlus } from "lucide-react";
+import { MapPin, Calendar, UserPlus, MessageSquare } from "lucide-react";
 import { PipelineBoard } from "@/components/pipeline/pipeline-board";
 import VacancyCampaignsPage from "./campaigns/page";
 
@@ -125,6 +125,12 @@ export default function VacancyDetailPage() {
           </div>
         </div>
         <div className="flex gap-2">
+          <Link href={`/vacancies/${id}/room`}>
+            <Button variant="default" size="sm" className="gap-1.5">
+              <MessageSquare className="size-4" />
+              Open Room
+            </Button>
+          </Link>
           <Dialog open={linkDialogOpen} onOpenChange={setLinkDialogOpen}>
             <DialogTrigger
               render={

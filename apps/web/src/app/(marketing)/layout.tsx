@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
-import dynamic from "next/dynamic";
 import Link from "next/link";
-
-const CookieConsent = dynamic(() => import("@/components/cookie-consent"), {
-  ssr: false,
-});
+import CookieConsent from "@/components/cookie-consent";
 
 export const metadata: Metadata = {
   title: "Recruitment OS - Het recruitmentplatform voor transport",

@@ -150,6 +150,10 @@ export function initSocketIO(httpServer: ServerType): Server {
   ]);
 
   domainEvents.subscribe((event) => {
+    if (event.type === "comment.created") {
+      io!.to(`tenant:${event.orgId}`).emit("pipeline:update", event);
+      return;
+    }
     if (!pipelineEvents.has(event.type)) return;
     io!.to(`tenant:${event.orgId}`).emit("pipeline:update", {
       ...event,

@@ -62,3 +62,26 @@ export function useNotificationSocket() {
     };
   }, [qc]);
 }
+
+/**
+ * Room timeline sync — invalidates room-timeline query
+ * when pipeline events or new comments arrive for this vacancy.
+ */
+export function useRoomTimelineSync(vacancyId: string) {
+  const qc = useQueryClient();
+
+  useEffect(() => {
+    const socket = getSocket();
+    if (!socket.connected) return;
+
+    const handlePipelineUpdate = () => {
+      qc.invalidateQueries({ queryKey: ["room-timeline", vacancyId] });
+      qc.invalidateQueries({ queryKey: ["room-stats", vacancyId] });
+    };
+
+    socket.on("pipeline:update", handlePipelineUpdate);
+    return () => {
+      socket.off("pipeline:update", handlePipelineUpdate);
+    };
+  }, [vacancyId, qc]);
+}

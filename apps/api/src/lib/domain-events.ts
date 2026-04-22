@@ -32,7 +32,8 @@ export type DomainEvent =
   | { type: "application.bulk_tag"; orgId: string; ids: string[] }
   | { type: "task.created"; orgId: string; id: string }
   | { type: "task.updated"; orgId: string; id: string }
-  | { type: "task.completed"; orgId: string; id: string };
+  | { type: "task.completed"; orgId: string; id: string }
+  | { type: "comment.created"; orgId: string; targetType: string; targetId: string };
 
 type Subscriber = (event: DomainEvent) => void | Promise<void>;
 
