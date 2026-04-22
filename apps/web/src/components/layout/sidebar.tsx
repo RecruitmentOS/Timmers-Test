@@ -41,19 +41,19 @@ type NavItem = {
 
 const FULL_NAV: NavItem[] = [
   { label: "Dashboard", href: "/dashboard", icon: LayoutDashboard, tourId: "tour-dashboard" },
-  { label: "Vacancies", href: "/vacancies", icon: Briefcase, tourId: "tour-vacatures" },
-  { label: "Candidates", href: "/candidates", icon: Users, tourId: "tour-kandidaten" },
+  { label: "Vacatures", href: "/vacancies", icon: Briefcase, tourId: "tour-vacatures" },
+  { label: "Kandidaten", href: "/candidates", icon: Users, tourId: "tour-kandidaten" },
   { label: "Intake", href: "/intake", icon: MessageSquareReply },
   { label: "Taken", href: "/tasks", icon: ListChecks },
-  { label: "Clients", href: "/clients", icon: Building2 },
+  { label: "Klanten", href: "/clients", icon: Building2 },
   { label: "Campagnes", href: "/campaigns", icon: Megaphone },
   { label: "Rapportages", href: "/reports", icon: BarChart3 },
-  { label: "Settings", href: "/settings", icon: Settings, tourId: "tour-instellingen" },
+  { label: "Instellingen", href: "/settings", icon: Settings, tourId: "tour-instellingen" },
 ];
 
 const CLIENT_NAV: NavItem[] = [
   { label: "Dashboard", href: "/portal", icon: LayoutDashboard },
-  { label: "Vacancies", href: "/portal/vacancies", icon: Briefcase },
+  { label: "Vacatures", href: "/portal/vacancies", icon: Briefcase },
 ];
 
 const AGENT_NAV: NavItem[] = [
@@ -86,14 +86,23 @@ export function AppSidebar({ variant = "full" }: { variant?: SidebarVariant }) {
     window.location.href = "/login";
   }
 
+  const homeHref =
+    variant === "client"
+      ? "/portal"
+      : variant === "agent"
+        ? "/agent"
+        : variant === "hm"
+          ? "/hiring-manager"
+          : "/dashboard";
+
   return (
     <SidebarRoot collapsible="icon" className="bg-slate-900 border-slate-800">
       <SidebarHeader className="p-4">
         <Link
-          href={variant === "client" ? "/portal" : variant === "agent" ? "/agent" : variant === "hm" ? "/hiring-manager" : "/dashboard"}
-          className="flex items-center gap-2 text-slate-100 group-data-[collapsible=icon]:justify-center"
+          href={homeHref}
+          className="flex items-center gap-2.5 text-slate-100 group-data-[collapsible=icon]:justify-center"
         >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-indigo-600 text-white font-bold text-sm">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-indigo-400 text-white font-bold text-sm shadow-lg shadow-primary/30">
             R
           </div>
           <span className="text-sm font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
@@ -102,14 +111,15 @@ export function AppSidebar({ variant = "full" }: { variant?: SidebarVariant }) {
         </Link>
       </SidebarHeader>
 
-      <Separator className="bg-slate-700/50" />
+      <Separator className="bg-slate-700/40" />
 
-      <SidebarContent>
+      <SidebarContent className="px-2 py-2">
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-0.5">
               {items.map((item) => {
-                const isActive = pathname === item.href || pathname.startsWith(item.href + "/");
+                const isActive =
+                  pathname === item.href || pathname.startsWith(item.href + "/");
                 return (
                   <SidebarMenuItem key={item.href} data-tour={item.tourId}>
                     <SidebarMenuButton
@@ -119,13 +129,19 @@ export function AppSidebar({ variant = "full" }: { variant?: SidebarVariant }) {
                         <Link
                           href={item.href}
                           className={cn(
-                            "text-slate-300 hover:text-slate-100",
-                            isActive && "bg-indigo-600/20 text-indigo-400"
+                            "rounded-md transition-all duration-150 text-slate-400 hover:text-slate-100 hover:bg-white/5",
+                            isActive &&
+                              "bg-gradient-to-r from-primary/25 to-primary/5 text-white border-l-2 border-primary font-medium hover:bg-transparent"
                           )}
                         />
                       }
                     >
-                      <item.icon className="shrink-0" />
+                      <item.icon
+                        className={cn(
+                          "shrink-0",
+                          isActive ? "text-primary" : "text-slate-500"
+                        )}
+                      />
                       <span>{item.label}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
@@ -136,27 +152,27 @@ export function AppSidebar({ variant = "full" }: { variant?: SidebarVariant }) {
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
-        <Separator className="bg-slate-700/50" />
-        <SidebarMenu>
+      <SidebarFooter className="px-2 pb-3">
+        <Separator className="bg-slate-700/40 mb-2" />
+        <SidebarMenu className="gap-0.5">
           <SidebarMenuItem>
             <SidebarMenuButton
-              tooltip="Sign out"
+              tooltip="Uitloggen"
               onClick={handleSignOut}
-              className="text-slate-400 hover:text-slate-100"
+              className="rounded-md text-slate-500 hover:text-slate-100 hover:bg-white/5 transition-all duration-150"
             >
               <LogOut className="shrink-0" />
-              <span>Sign out</span>
+              <span>Uitloggen</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
           <SidebarMenuItem>
             <SidebarMenuButton
-              tooltip="Collapse sidebar"
+              tooltip="Sidebar inklappen"
               onClick={toggleSidebar}
-              className="text-slate-400 hover:text-slate-100"
+              className="rounded-md text-slate-500 hover:text-slate-100 hover:bg-white/5 transition-all duration-150"
             >
               <ChevronsLeft className="shrink-0 transition-transform group-data-[state=collapsed]:rotate-180" />
-              <span>Collapse</span>
+              <span>Inklappen</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
