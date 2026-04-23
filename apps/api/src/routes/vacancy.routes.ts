@@ -27,6 +27,7 @@ const updateVacancySchema = z.object({
   qualificationCriteria: z.any().optional(),
   intakeEnabled: z.boolean().optional(),
   hourlyRate: z.number().positive().nullable().optional(),
+  distributionChannels: z.record(z.string(), z.boolean()).optional(),
 });
 
 const addAssignmentSchema = z.object({
