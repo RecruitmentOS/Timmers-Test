@@ -37,7 +37,7 @@ export const publicVacancyService = {
           description: vacancies.description,
           location: vacancies.location,
           employmentType: vacancies.employmentType,
-          slug: vacancies.slug,
+          publicSlug: vacancies.publicSlug,
           requiredLicenses: vacancies.requiredLicenses,
           createdAt: vacancies.createdAt,
         })
@@ -52,7 +52,7 @@ export const publicVacancyService = {
         description: r.description,
         location: r.location,
         employmentType: r.employmentType,
-        slug: r.slug ?? "",
+        slug: r.publicSlug ?? "",
         requiredLicenses: (r.requiredLicenses as string[] | null) ?? null,
         organizationName: "", // filled by caller
         organizationLogo: null,
@@ -76,7 +76,7 @@ export const publicVacancyService = {
           description: vacancies.description,
           location: vacancies.location,
           employmentType: vacancies.employmentType,
-          slug: vacancies.slug,
+          publicSlug: vacancies.publicSlug,
           requiredLicenses: vacancies.requiredLicenses,
           ownerId: vacancies.ownerId,
           createdAt: vacancies.createdAt,
@@ -84,7 +84,7 @@ export const publicVacancyService = {
         .from(vacancies)
         .where(
           and(
-            eq(vacancies.slug, vacancySlug),
+            eq(vacancies.publicSlug, vacancySlug),
             eq(vacancies.status, "active"),
             isNull(vacancies.deletedAt)
           )
@@ -99,7 +99,7 @@ export const publicVacancyService = {
         description: r.description,
         location: r.location,
         employmentType: r.employmentType,
-        slug: r.slug ?? "",
+        slug: r.publicSlug ?? "",
         requiredLicenses: (r.requiredLicenses as string[] | null) ?? null,
         organizationName: "", // filled by caller
         organizationLogo: null,

@@ -1,0 +1,7 @@
+{
+  "framework": "nextjs",
+  "rootDirectory": "apps/web",
+  "buildCommand": "cd ../.. && pnpm install --frozen-lockfile && pnpm turbo build --filter=@recruitment-os/web",
+  "outputDirectory": ".next",
+  "installCommand": "echo 'install handled by buildCommand'"
+}

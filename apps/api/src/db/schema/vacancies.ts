@@ -44,6 +44,7 @@ export const vacancies = pgTable(
     clientId: uuid("client_id").references(() => clients.id),
     qualificationCriteria: jsonb("qualification_criteria"),
     slug: varchar("slug", { length: 255 }),
+    publicSlug: varchar("public_slug", { length: 255 }),
     latitude: numeric("latitude", { precision: 10, scale: 7 }),
     longitude: numeric("longitude", { precision: 10, scale: 7 }),
     geocodedAt: timestamp("geocoded_at"),
