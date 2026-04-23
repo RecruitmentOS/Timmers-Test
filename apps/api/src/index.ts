@@ -121,7 +121,12 @@ app.route("/api", publicRoutes);
 
 // Auth + tenant middleware on all /api/* routes (excluding /api/auth/* and /api/public/*)
 app.use("/api/*", async (c, next) => {
-  // Skip auth middleware for Better Auth routes, public routes, and billing webhook
+  // Skip auth middleware for Better Auth routes, public routes, and billing webhook.
+  // /api/nilo/sessions is bypassed here because:
+  //   - POST / (niloTriggerRoutes) uses its own API-key auth, not Better Auth
+  //   - GET / and PATCH /:id (niloSessionsRoutes) apply authMiddleware via their own
+  //     router-level .use('*', authMiddleware, tenantMiddleware) — Hono fires route-level
+  //     middleware regardless of global middleware being skipped.
   if (c.req.path.startsWith("/api/auth/") || c.req.path.startsWith("/api/public/") || c.req.path === "/api/billing/webhook" || c.req.path.startsWith("/api/webhooks/whatsapp/") || c.req.path.startsWith("/api/nilo/sessions")) {
     return next();
   }
@@ -129,7 +134,8 @@ app.use("/api/*", async (c, next) => {
 });
 
 app.use("/api/*", async (c, next) => {
-  // Skip tenant middleware for Better Auth routes, public routes, billing webhook, and WhatsApp webhook
+  // Skip tenant middleware for Better Auth routes, public routes, billing webhook, and WhatsApp webhook.
+  // /api/nilo/sessions: see comment above — niloSessionsRoutes handles its own tenant context.
   if (c.req.path.startsWith("/api/auth/") || c.req.path.startsWith("/api/public/") || c.req.path === "/api/billing/webhook" || c.req.path.startsWith("/api/webhooks/whatsapp/") || c.req.path.startsWith("/api/nilo/sessions")) {
     return next();
   }
