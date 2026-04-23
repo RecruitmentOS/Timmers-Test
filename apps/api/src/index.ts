@@ -43,6 +43,7 @@ import { whatsAppWebhookRoutes } from "./routes/whatsapp-webhook.routes.js";
 import { intakeRoutes } from "./routes/intake.routes.js";
 import { intakeTemplateRoutes } from "./routes/intake-template.routes.js";
 import { intakeMetricsRoutes } from "./routes/intake-metrics.routes.js";
+import { niloTriggerRoutes } from "./routes/nilo-trigger.routes.js";
 import type { AppEnv } from "./lib/app-env.js";
 import { startJobQueue, getJobQueue } from "./lib/job-queue.js";
 import { registerJobHandlers } from "./jobs/job-handlers.js";
@@ -120,7 +121,7 @@ app.route("/api", publicRoutes);
 // Auth + tenant middleware on all /api/* routes (excluding /api/auth/* and /api/public/*)
 app.use("/api/*", async (c, next) => {
   // Skip auth middleware for Better Auth routes, public routes, and billing webhook
-  if (c.req.path.startsWith("/api/auth/") || c.req.path.startsWith("/api/public/") || c.req.path === "/api/billing/webhook" || c.req.path.startsWith("/api/webhooks/whatsapp/")) {
+  if (c.req.path.startsWith("/api/auth/") || c.req.path.startsWith("/api/public/") || c.req.path === "/api/billing/webhook" || c.req.path.startsWith("/api/webhooks/whatsapp/") || c.req.path.startsWith("/api/nilo/sessions")) {
     return next();
   }
   return authMiddleware(c, next);
@@ -128,7 +129,7 @@ app.use("/api/*", async (c, next) => {
 
 app.use("/api/*", async (c, next) => {
   // Skip tenant middleware for Better Auth routes, public routes, billing webhook, and WhatsApp webhook
-  if (c.req.path.startsWith("/api/auth/") || c.req.path.startsWith("/api/public/") || c.req.path === "/api/billing/webhook" || c.req.path.startsWith("/api/webhooks/whatsapp/")) {
+  if (c.req.path.startsWith("/api/auth/") || c.req.path.startsWith("/api/public/") || c.req.path === "/api/billing/webhook" || c.req.path.startsWith("/api/webhooks/whatsapp/") || c.req.path.startsWith("/api/nilo/sessions")) {
     return next();
   }
   return tenantMiddleware(c, next);
@@ -171,6 +172,7 @@ app.route("/api/webhooks/whatsapp", whatsAppWebhookRoutes);
 app.route("/api/intake", intakeRoutes);
 app.route("/api/intake-templates", intakeTemplateRoutes);
 app.route("/api/intake/metrics", intakeMetricsRoutes);
+app.route("/api/nilo/sessions", niloTriggerRoutes);
 
 // Sentry error handler — captures unhandled errors
 app.onError((err, c) => {
