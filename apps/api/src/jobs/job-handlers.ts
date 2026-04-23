@@ -17,7 +17,8 @@ import { registerMetaInsightsJobs } from "./meta-insights-sync.js";
 import { registerBackupJob } from "./backup.job.js";
 import { registerDataRetentionJob } from "./data-retention.job.js";
 import { registerFleksSyncJob } from "./fleks-sync.job.js";
-import { registerIntakeJobs } from "./intake.jobs.js";
+import { registerIntakeJobs } from "./intake.jobs.js"
+import { registerNiloJobs } from "../modules/nilo/jobs/nilo.jobs.js";
 
 type OverdueReminderData = { taskId: string; orgId: string };
 type GeocodeCandidateData = { orgId: string; candidateId: string; city: string };
@@ -256,4 +257,7 @@ export async function registerJobHandlers(): Promise<void> {
 
   // Register intake jobs (WhatsApp first-contact + reminder scheduling)
   await registerIntakeJobs(boss);
+
+  // Register Nilo jobs (Hey Nilo WhatsApp screening flow)
+  await registerNiloJobs(boss);
 }
