@@ -19,15 +19,15 @@ describe("IntakeOrchestrator.startSession", () => {
 
   it("sends first-contact template and schedules 24h reminder", async () => {
     const deps = makeDeps();
-    await startSession("s1", deps);
+    await startSession("o1", "s1", deps);
     expect(deps.sendWhatsApp).toHaveBeenCalledWith(expect.objectContaining({
       toPhone: "+31600000001", body: "Hoi Jan",
     }));
     expect(deps.persistOutbound).toHaveBeenCalledWith({
-      sessionId: "s1", body: "Hoi Jan", twilioSid: "SM1",
+      sessionId: "s1", orgId: "o1", body: "Hoi Jan", twilioSid: "SM1",
     });
     expect(deps.scheduleReminder).toHaveBeenCalledWith({
-      sessionId: "s1", afterSeconds: 86400, variant: "reminder_24h",
+      sessionId: "s1", orgId: "o1", afterSeconds: 86400, variant: "reminder_24h",
     });
   });
 });

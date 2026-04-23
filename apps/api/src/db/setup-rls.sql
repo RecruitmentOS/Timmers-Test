@@ -283,4 +283,24 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA pgboss TO app_user;
 -- + withTenantContext, which SET LOCAL app.tenant_id and let RLS filter.
 -- BYPASSRLS only kicks in when app.tenant_id is unset (webhooks + jobs
 -- that haven't yet looked up their orgId).
+-- ── placements ─────────────────────────────────────────────────────────────
+
+CREATE POLICY "placements_tenant_select" ON "placements" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "placements_tenant_insert" ON "placements" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "placements_tenant_update" ON "placements" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "placements_tenant_delete" ON "placements" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
+ALTER TABLE placements FORCE ROW LEVEL SECURITY;
+GRANT ALL ON placements TO app_user;
+
+-- ── interview_scorecards ────────────────────────────────────────────────────
+
+CREATE POLICY "interview_scorecards_tenant_select" ON "interview_scorecards" AS PERMISSIVE FOR SELECT TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "interview_scorecards_tenant_insert" ON "interview_scorecards" AS PERMISSIVE FOR INSERT TO "app_user" WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "interview_scorecards_tenant_update" ON "interview_scorecards" AS PERMISSIVE FOR UPDATE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid) WITH CHECK ("organization_id" = current_setting('app.tenant_id')::uuid);
+CREATE POLICY "interview_scorecards_tenant_delete" ON "interview_scorecards" AS PERMISSIVE FOR DELETE TO "app_user" USING ("organization_id" = current_setting('app.tenant_id')::uuid);
+
+ALTER TABLE interview_scorecards FORCE ROW LEVEL SECURITY;
+GRANT ALL ON interview_scorecards TO app_user;
+
 ALTER ROLE app_user BYPASSRLS;

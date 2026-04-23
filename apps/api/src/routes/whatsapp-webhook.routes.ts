@@ -1,5 +1,6 @@
 // apps/api/src/routes/whatsapp-webhook.routes.ts
 import { Hono } from "hono";
+import { z } from "zod";
 import { eq, and } from "drizzle-orm";
 import type { AppEnv } from "../lib/app-env.js";
 import { db } from "../db/index.js";
@@ -9,9 +10,20 @@ import {
 import { getJobQueue } from "../lib/job-queue.js";
 import { createTwilioSandboxGateway } from "../modules/intake/whatsapp/twilio-sandbox.js";
 
+const twilioWebhookSchema = z.object({
+  From: z.string().min(1),
+  Body: z.string(),
+  To: z.string().optional(),
+  MessageSid: z.string().optional(),
+}).passthrough();
+
 export const whatsAppWebhookRoutes = new Hono<AppEnv>().post("/twilio", async (c) => {
   const raw = await c.req.text();
   const params = Object.fromEntries(new URLSearchParams(raw));
+  const validation = twilioWebhookSchema.safeParse(params);
+  if (!validation.success) {
+    return c.text("bad request", 400);
+  }
   const signature = c.req.header("X-Twilio-Signature") ?? "";
   const gw = createTwilioSandboxGateway({
     accountSid: process.env.TWILIO_ACCOUNT_SID!,
