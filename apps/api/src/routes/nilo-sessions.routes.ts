@@ -20,7 +20,7 @@ export const niloSessionsRoutes = new Hono<AppEnv>()
     const orgId = c.get('organizationId')
     const state = c.req.query('state')
     const sessions = await withTenantContext(orgId, async (tx) => {
-      const query = tx
+      const base = tx
         .select({
           id: niloSessions.id,
           contactPhone: niloSessions.contactPhone,
@@ -34,9 +34,9 @@ export const niloSessionsRoutes = new Hono<AppEnv>()
           completedAt: niloSessions.completedAt,
         })
         .from(niloSessions)
-        .orderBy(desc(niloSessions.createdAt))
-        .limit(100)
-      return state ? query.where(eq(niloSessions.state, state)) : query
+      return state
+        ? base.where(eq(niloSessions.state, state)).orderBy(desc(niloSessions.createdAt)).limit(100)
+        : base.orderBy(desc(niloSessions.createdAt)).limit(100)
     })
     return c.json({ sessions, total: sessions.length })
   })
