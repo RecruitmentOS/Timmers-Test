@@ -6,16 +6,19 @@ export type NiloSessionState =
   | 'completed'
   | 'abandoned'
 
+export type NiloConfidence = 'high' | 'medium' | 'low'
+
 export interface NiloSession {
   id: string
   orgId: string
+  flowId: string | null
   contactPhone: string
   contactName: string | null
   context: Record<string, unknown>
   state: NiloSessionState
   verdict: 'qualified' | 'rejected' | 'unsure' | null
   verdictReason: string | null
-  answers: Record<string, { value: unknown; confidence: string }>
+  answers: Record<string, { value: unknown; confidence: NiloConfidence }>
   stuckCounter: Record<string, number>
   reminderCount: number
   matchScore: number | null
@@ -63,7 +66,8 @@ export interface NiloFlow {
   id: string
   orgId: string
   name: string
-  locale: 'nl' | 'en'
+  locale: 'nl' | 'en' | 'pl' | 'ro'
+  vacancyId?: string
   criteria: NiloCriteria
   templates: NiloTemplates
   reminderChain: ReminderStep[]
@@ -79,7 +83,7 @@ export interface NiloPersistence {
     orgId: string,
     sessionId: string,
     limit?: number,
-  ): Promise<Array<{ direction: 'inbound' | 'outbound'; body: string }>>
+  ): Promise<Array<{ direction: 'inbound' | 'outbound'; body: string; sentAt: Date }>>
   setInitiated(orgId: string, sessionId: string): Promise<void>
   setInProgress(orgId: string, sessionId: string): Promise<void>
   incrementReminderCount(orgId: string, sessionId: string): Promise<void>
@@ -88,9 +92,9 @@ export interface NiloPersistence {
     sessionId: string,
     body: string,
     twilioSid: string,
-    toolCalls?: unknown,
+    toolCalls?: Array<{ name: string; input: Record<string, unknown> }>,
   ): Promise<void>
-  recordAnswer(orgId: string, sessionId: string, key: string, value: unknown, confidence: string): Promise<void>
+  recordAnswer(orgId: string, sessionId: string, key: string, value: unknown, confidence: NiloConfidence): Promise<void>
   bumpStuck(orgId: string, sessionId: string, key: string): Promise<number>
   escalate(orgId: string, sessionId: string, reason: string, context: string): Promise<void>
   finalize(orgId: string, sessionId: string, status: 'qualified' | 'rejected' | 'unsure', summary: string, rejectionReason?: string): Promise<void>
