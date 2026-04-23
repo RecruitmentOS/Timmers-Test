@@ -111,7 +111,7 @@ export type SidebarVariant = "employer" | "agency" | "full" | "client" | "agent"
 function SidebarBadge({ count }: { count: number }) {
   if (count <= 0) return null;
   return (
-    <span className="ml-auto rounded-full bg-indigo-500 px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white tabular-nums">
+    <span className="ml-auto rounded-full bg-primary px-1.5 py-0.5 text-[10px] font-semibold leading-none text-white tabular-nums">
       {count > 99 ? "99+" : count}
     </span>
   );
@@ -186,9 +186,9 @@ export function AppSidebar({ variant = "employer" }: { variant?: SidebarVariant 
                   ? "/hiring-manager"
                   : "/dashboard"
           }
-          className="flex items-center gap-2 text-slate-100 group-data-[collapsible=icon]:justify-center"
+          className="flex items-center gap-2.5 text-slate-100 group-data-[collapsible=icon]:justify-center"
         >
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-indigo-500 to-violet-600 text-white font-bold text-sm shadow">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-primary to-indigo-400 text-white font-bold text-sm shadow-lg shadow-primary/30">
             R
           </div>
           <span className="text-sm font-semibold tracking-tight group-data-[collapsible=icon]:hidden">
@@ -197,12 +197,12 @@ export function AppSidebar({ variant = "employer" }: { variant?: SidebarVariant 
         </Link>
       </SidebarHeader>
 
-      <Separator className="bg-slate-700/50" />
+      <Separator className="bg-slate-700/40" />
 
-      <SidebarContent>
+      <SidebarContent className="px-2 py-2">
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>
+            <SidebarMenu className="gap-0.5">
               {items.map((item) => {
                 const isActive =
                   pathname === item.href || pathname.startsWith(item.href + "/");
@@ -217,16 +217,19 @@ export function AppSidebar({ variant = "employer" }: { variant?: SidebarVariant 
                         <Link
                           href={item.href}
                           className={cn(
-                            "text-slate-300 hover:text-slate-100",
-                            isActive && [
-                              "bg-indigo-600/20 text-indigo-300",
-                              "border-l-2 border-indigo-500 -ml-px pl-[calc(theme(spacing.2)-2px)]",
-                            ]
+                            "rounded-md transition-all duration-150 text-slate-400 hover:text-slate-100 hover:bg-white/5",
+                            isActive &&
+                              "bg-gradient-to-r from-primary/25 to-primary/5 text-white border-l-2 border-primary font-medium hover:bg-transparent"
                           )}
                         />
                       }
                     >
-                      <item.icon className="shrink-0" />
+                      <item.icon
+                        className={cn(
+                          "shrink-0",
+                          isActive ? "text-primary" : "text-slate-500"
+                        )}
+                      />
                       <span className="flex-1">{item.label}</span>
                       <SidebarBadge count={badgeCount} />
                     </SidebarMenuButton>
@@ -243,14 +246,17 @@ export function AppSidebar({ variant = "employer" }: { variant?: SidebarVariant 
                       tooltip="Instellingen"
                       onClick={() => setManualSettingsOpen((o) => !o)}
                       className={cn(
-                        "text-slate-300 hover:text-slate-100 cursor-pointer",
-                        isSettingsActive && [
-                          "bg-indigo-600/20 text-indigo-300",
-                          "border-l-2 border-indigo-500 -ml-px pl-[calc(theme(spacing.2)-2px)]",
-                        ]
+                        "rounded-md transition-all duration-150 text-slate-400 hover:text-slate-100 hover:bg-white/5 cursor-pointer",
+                        isSettingsActive &&
+                          "bg-gradient-to-r from-primary/25 to-primary/5 text-white border-l-2 border-primary font-medium hover:bg-transparent"
                       )}
                     >
-                      <Settings className="shrink-0" />
+                      <Settings
+                        className={cn(
+                          "shrink-0",
+                          isSettingsActive ? "text-primary" : "text-slate-500"
+                        )}
+                      />
                       <span className="flex-1">Instellingen</span>
                       {!isCollapsed && (
                         <ChevronDown
@@ -278,7 +284,7 @@ export function AppSidebar({ variant = "employer" }: { variant?: SidebarVariant 
                                   href={sub.href}
                                   className={cn(
                                     "text-slate-400 hover:text-slate-200 text-xs",
-                                    isSubActive && "text-indigo-300"
+                                    isSubActive && "text-primary"
                                   )}
                                 />
                               }
@@ -298,14 +304,14 @@ export function AppSidebar({ variant = "employer" }: { variant?: SidebarVariant 
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter>
-        <Separator className="bg-slate-700/50" />
-        <SidebarMenu>
+      <SidebarFooter className="px-2 pb-3">
+        <Separator className="bg-slate-700/40 mb-2" />
+        <SidebarMenu className="gap-0.5">
           <SidebarMenuItem>
             <SidebarMenuButton
               tooltip="Uitloggen"
               onClick={handleSignOut}
-              className="text-slate-400 hover:text-slate-100"
+              className="rounded-md text-slate-500 hover:text-slate-100 hover:bg-white/5 transition-all duration-150"
             >
               <LogOut className="shrink-0" />
               <span>Uitloggen</span>
@@ -315,7 +321,7 @@ export function AppSidebar({ variant = "employer" }: { variant?: SidebarVariant 
             <SidebarMenuButton
               tooltip="Zijbalk inklappen"
               onClick={toggleSidebar}
-              className="text-slate-400 hover:text-slate-100"
+              className="rounded-md text-slate-500 hover:text-slate-100 hover:bg-white/5 transition-all duration-150"
             >
               <ChevronsLeft className="shrink-0 transition-transform group-data-[state=collapsed]:rotate-180" />
               <span>Inklappen</span>
