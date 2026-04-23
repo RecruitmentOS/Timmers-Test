@@ -44,6 +44,7 @@ import { intakeRoutes } from "./routes/intake.routes.js";
 import { intakeTemplateRoutes } from "./routes/intake-template.routes.js";
 import { intakeMetricsRoutes } from "./routes/intake-metrics.routes.js";
 import { niloTriggerRoutes } from "./routes/nilo-trigger.routes.js";
+import { niloSessionsRoutes } from "./routes/nilo-sessions.routes.js";
 import type { AppEnv } from "./lib/app-env.js";
 import { startJobQueue, getJobQueue } from "./lib/job-queue.js";
 import { registerJobHandlers } from "./jobs/job-handlers.js";
@@ -173,6 +174,7 @@ app.route("/api/intake", intakeRoutes);
 app.route("/api/intake-templates", intakeTemplateRoutes);
 app.route("/api/intake/metrics", intakeMetricsRoutes);
 app.route("/api/nilo/sessions", niloTriggerRoutes);
+app.route("/api/nilo/sessions", niloSessionsRoutes);
 
 // Sentry error handler — captures unhandled errors
 app.onError((err, c) => {
