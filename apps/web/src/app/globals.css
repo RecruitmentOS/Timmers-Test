@@ -67,11 +67,11 @@
     --border: oklch(0.922 0 0);
     --input: oklch(0.922 0 0);
     --ring: oklch(0.457 0.24 277.023);
-    --chart-1: oklch(0.457 0.24 277.023);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    --chart-1: oklch(0.76 0.18 60);    /* Amber — transport accent */
+    --chart-2: oklch(0.65 0.15 195);   /* Teal */
+    --chart-3: oklch(0.60 0.20 145);   /* Groen */
+    --chart-4: oklch(0.70 0.18 320);   /* Paars */
+    --chart-5: oklch(0.65 0.20 30);    /* Oranje */
     --radius: 0.625rem;
     /* Sidebar: slate-900 dark background */
     --sidebar: oklch(0.129 0.042 264.695);
@@ -103,11 +103,11 @@
     --border: oklch(1 0 0 / 10%);
     --input: oklch(1 0 0 / 15%);
     --ring: oklch(0.457 0.24 277.023);
-    --chart-1: oklch(0.457 0.24 277.023);
-    --chart-2: oklch(0.556 0 0);
-    --chart-3: oklch(0.439 0 0);
-    --chart-4: oklch(0.371 0 0);
-    --chart-5: oklch(0.269 0 0);
+    --chart-1: oklch(0.76 0.18 60);
+    --chart-2: oklch(0.70 0.15 195);
+    --chart-3: oklch(0.65 0.20 145);
+    --chart-4: oklch(0.73 0.18 320);
+    --chart-5: oklch(0.68 0.20 30);
     --sidebar: oklch(0.129 0.042 264.695);
     --sidebar-foreground: oklch(0.869 0.022 252.894);
     --sidebar-primary: oklch(0.457 0.24 277.023);
