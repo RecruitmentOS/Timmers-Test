@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
-import type { Interview } from "@recruitment-os/types";
+import type { Interview, InterviewScorecard, CreateScorecardInput } from "@recruitment-os/types";
 
 /**
  * List interviews with optional filters.
@@ -65,6 +65,38 @@ export function useCancelInterview() {
       apiClient(`/api/interviews/${interviewId}`, { method: "DELETE" }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["interviews"] });
+    },
+  });
+}
+
+/**
+ * Fetch scorecard for a specific interview.
+ */
+export function useInterviewScorecard(interviewId: string) {
+  return useQuery<{ scorecard: InterviewScorecard | null }>({
+    queryKey: ["interview-scorecard", interviewId],
+    queryFn: () =>
+      apiClient<{ scorecard: InterviewScorecard | null }>(
+        `/api/interviews/${interviewId}/scorecard`
+      ),
+    enabled: !!interviewId,
+    staleTime: 30_000,
+  });
+}
+
+/**
+ * Submit (create or update) a scorecard for an interview.
+ */
+export function useSubmitScorecard(interviewId: string) {
+  const queryClient = useQueryClient();
+  return useMutation<InterviewScorecard, Error, CreateScorecardInput>({
+    mutationFn: (input) =>
+      apiClient<InterviewScorecard>(`/api/interviews/${interviewId}/scorecard`, {
+        method: "POST",
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["interview-scorecard", interviewId] });
     },
   });
 }

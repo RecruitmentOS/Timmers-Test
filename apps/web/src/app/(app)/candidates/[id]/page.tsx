@@ -18,6 +18,7 @@ import { CVParseReview } from "@/components/cv-parse/cv-parse-review";
 import { DocumentList } from "@/components/documents/document-list";
 import { AIScreeningTrigger } from "../components/ai-screening-trigger";
 import { ScheduleInterview } from "../components/schedule-interview";
+import { ApplicationInterviews } from "@/components/interviews/application-interviews";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -469,6 +470,7 @@ export default function CandidateDetailPage() {
                             vacancyTitle={app.vacancyTitle || "Vacature"}
                           />
                         </div>
+                        <ApplicationInterviews applicationId={app.id} />
                       </div>
                     ))}
                   </div>
