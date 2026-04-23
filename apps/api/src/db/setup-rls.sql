@@ -271,10 +271,14 @@ GRANT ALL ON fleks_sync_cursors TO app_user;
 
 -- pg-boss v12 auto-creates pgboss schema on startup; app_user needs the
 -- permission to do so + access to its tables/sequences afterward.
-GRANT CREATE ON DATABASE recruitment_os_dev TO app_user;
-GRANT USAGE, CREATE ON SCHEMA pgboss TO app_user;
-GRANT ALL ON ALL TABLES IN SCHEMA pgboss TO app_user;
-GRANT ALL ON ALL SEQUENCES IN SCHEMA pgboss TO app_user;
+DO $$ BEGIN EXECUTE format('GRANT CREATE ON DATABASE %I TO app_user', current_database()); END $$;
+DO $$ BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.schemata WHERE schema_name = 'pgboss') THEN
+    EXECUTE 'GRANT USAGE, CREATE ON SCHEMA pgboss TO app_user';
+    EXECUTE 'GRANT ALL ON ALL TABLES IN SCHEMA pgboss TO app_user';
+    EXECUTE 'GRANT ALL ON ALL SEQUENCES IN SCHEMA pgboss TO app_user';
+  END IF;
+END $$;
 
 -- The WhatsApp inbound webhook must resolve intake_session by phone before
 -- any tenant context is available (webhooks aren't authed). Rather than

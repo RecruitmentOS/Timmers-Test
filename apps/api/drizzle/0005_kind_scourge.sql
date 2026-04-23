@@ -1,0 +1,1 @@
+ALTER TABLE "vacancies" ADD COLUMN "public_slug" varchar(255);
