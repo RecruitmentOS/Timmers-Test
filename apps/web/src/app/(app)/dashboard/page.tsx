@@ -7,27 +7,25 @@ import { WidgetQualifiedThisWeek } from "@/components/dashboard/widget-qualified
 import { WidgetOpenTasks } from "@/components/dashboard/widget-open-tasks";
 import { WidgetSourceSnapshot } from "@/components/dashboard/widget-source-snapshot";
 
-/**
- * Dashboard page
- *
- * Grid of six independent widgets. Each widget owns its own data fetch
- * (via its own hook in use-dashboard.ts) and its own loading / error
- * state — the page itself does not read `session.role` or branch on
- * role, because the backend services in Plan 02-02 already scope
- * results by role on the server. The frontend just renders what it
- * gets.
- */
-
 export default function DashboardPage() {
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <p className="text-sm text-muted-foreground">
-          Overzicht van vandaag — vacatures, kandidaten en taken in één blik.
-        </p>
+      {/* Welkomstbanner */}
+      <div className="relative overflow-hidden rounded-xl bg-gradient-to-r from-primary via-primary/90 to-indigo-400 p-6 text-primary-foreground shadow-lg shadow-primary/20">
+        {/* Decoratieve cirkels */}
+        <div className="pointer-events-none absolute -right-10 -top-10 h-48 w-48 rounded-full bg-white/5" />
+        <div className="pointer-events-none absolute -bottom-6 right-12 h-32 w-32 rounded-full bg-white/5" />
+        <div className="pointer-events-none absolute bottom-4 right-4 h-16 w-16 rounded-full bg-white/8" />
+
+        <div className="relative z-10">
+          <h1 className="text-xl font-semibold">Goedemorgen 👋</h1>
+          <p className="mt-1 text-sm text-primary-foreground/75">
+            Hier is je overzicht van vandaag — vacatures, kandidaten en taken in één blik.
+          </p>
+        </div>
       </div>
 
+      {/* Widget grid */}
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         <WidgetOpenVacancies />
         <WidgetNewCandidates />
