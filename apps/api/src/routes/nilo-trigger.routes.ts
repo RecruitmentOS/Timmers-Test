@@ -3,10 +3,10 @@ import { z } from 'zod'
 import { eq, and, isNull } from 'drizzle-orm'
 import { timingSafeEqual, createHash } from 'node:crypto'
 import type { AppEnv } from '../lib/app-env.js'
-import { db } from '../db/index.js'
+import { dbAdmin } from '../db/index.js'
 import { niloApiKeys, niloSessions, niloTriggerEvents } from '../db/schema/index.js'
 import { withTenantContext } from '../lib/with-tenant-context.js'
-import { getJobQueue } from '../lib/job-queue.js'
+import { tryGetJobQueue } from '../lib/job-queue.js'
 
 const triggerSchema = z.object({
   external_ref: z.string().max(255).optional(),
@@ -17,9 +17,16 @@ const triggerSchema = z.object({
   context: z.record(z.string(), z.unknown()).optional(),
 })
 
+/**
+ * Resolves an API key to its organization ID.
+ *
+ * Uses dbAdmin (superuser connection, bypasses RLS) because the tenant is not yet
+ * known at this point — the key lookup itself is what establishes the tenant identity.
+ * Timing-safe comparison prevents enumeration attacks.
+ */
 async function resolveApiKey(rawKey: string): Promise<{ orgId: string } | null> {
   const incoming = createHash('sha256').update(rawKey).digest('hex')
-  const rows = await db
+  const rows = await dbAdmin
     .select({ orgId: niloApiKeys.organizationId, storedHash: niloApiKeys.keyHash })
     .from(niloApiKeys)
     .where(isNull(niloApiKeys.revokedAt))
@@ -35,7 +42,6 @@ async function resolveApiKey(rawKey: string): Promise<{ orgId: string } | null> 
 }
 
 export const niloTriggerRoutes = new Hono<AppEnv>().post('/', async (c) => {
-  // 1. Extract and validate API key
   const authHeader = c.req.header('Authorization') ?? ''
   const rawKey = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : ''
   if (!rawKey) return c.json({ error: 'missing api key' }, 401)
@@ -45,7 +51,6 @@ export const niloTriggerRoutes = new Hono<AppEnv>().post('/', async (c) => {
 
   const { orgId } = keyRecord
 
-  // 2. Validate body
   const body = await c.req.json().catch(() => null)
   const parsed = triggerSchema.safeParse(body)
   if (!parsed.success) {
@@ -54,26 +59,27 @@ export const niloTriggerRoutes = new Hono<AppEnv>().post('/', async (c) => {
 
   const { external_ref, contact, context = {} } = parsed.data
 
-  // 3. Idempotency check via external_ref (read-only query, no tenant context needed)
   if (external_ref) {
-    const [existing] = await db
-      .select({ sessionId: niloTriggerEvents.sessionId })
-      .from(niloTriggerEvents)
-      .where(
-        and(
-          eq(niloTriggerEvents.organizationId, orgId),
-          eq(niloTriggerEvents.externalRef, external_ref),
-        ),
-      )
-      .limit(1)
+    const existing = await withTenantContext(orgId, async (tx) => {
+      const [row] = await tx
+        .select({ sessionId: niloTriggerEvents.sessionId })
+        .from(niloTriggerEvents)
+        .where(
+          and(
+            eq(niloTriggerEvents.organizationId, orgId),
+            eq(niloTriggerEvents.externalRef, external_ref),
+          ),
+        )
+        .limit(1)
+      return row ?? null
+    })
 
     if (existing?.sessionId) {
       return c.json({ session_id: existing.sessionId, duplicate: true }, 409)
     }
   }
 
-  // 4. Create session + log trigger event (both need withTenantContext for RLS)
-  let sessionId!: string
+  let sessionId: string | null = null
 
   await withTenantContext(orgId, async (tx) => {
     const [session] = await tx
@@ -98,12 +104,11 @@ export const niloTriggerRoutes = new Hono<AppEnv>().post('/', async (c) => {
     })
   })
 
-  // 5. Enqueue start job (gracefully skip if job queue not enabled)
-  try {
-    const boss = getJobQueue()
+  if (!sessionId) return c.json({ error: 'session creation failed' }, 500)
+
+  const boss = tryGetJobQueue()
+  if (boss) {
     await boss.send('nilo.start', { orgId, sessionId })
-  } catch {
-    // Job queue not started (JOBS_ENABLED=false in dev) — session still created
   }
 
   return c.json({ session_id: sessionId, state: 'created' }, 201)

@@ -93,6 +93,11 @@ export function getJobQueue(): PgBoss {
   return boss;
 }
 
+/** Returns the job queue instance if started, or null if JOBS_ENABLED=false. */
+export function tryGetJobQueue(): PgBoss | null {
+  return boss;
+}
+
 async function shutdown(): Promise<void> {
   if (boss) {
     await boss.stop({ graceful: true, timeout: 5000 });
