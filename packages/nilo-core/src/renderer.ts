@@ -16,7 +16,7 @@ export function buildTemplateContext(
   session: { contactName: string | null; context: Record<string, unknown> },
   flow: { name: string },
 ): NiloTemplateContext {
-  const firstName = session.contactName?.split(' ')[0] ?? 'there'
+  const firstName = session.contactName?.split(' ')[0] || 'there'
   return {
     candidate: {
       first_name: firstName,
