@@ -114,18 +114,20 @@ export function createDrizzlePersistence(boss: PgBoss): NiloPersistence {
     },
 
     async bumpStuck(orgId, sessionId, key) {
-      const rows = await db.execute<{ count: number }>(
-        sql`UPDATE nilo_sessions
-            SET stuck_counter = jsonb_set(
-              stuck_counter,
-              ${`{${key}}`}::text[],
-              (COALESCE((stuck_counter->>${key})::int, 0) + 1)::text::jsonb
-            )
-            WHERE id = ${sessionId}
-            RETURNING (stuck_counter->>${key})::int as count`,
-      )
-      const row = (rows as unknown as Array<{ count: number }>)[0]
-      return row?.count ?? 0
+      return withTenantContext(orgId, async (tx) => {
+        const rows = await tx.execute(
+          sql`UPDATE nilo_sessions
+              SET stuck_counter = jsonb_set(
+                stuck_counter,
+                ${`{${key}}`}::text[],
+                (COALESCE((stuck_counter->>${key})::int, 0) + 1)::text::jsonb
+              )
+              WHERE id = ${sessionId}
+              RETURNING (stuck_counter->>${key})::int as count`,
+        )
+        const row = (rows as unknown as Array<{ count: number }>)[0]
+        return row?.count ?? 0
+      })
     },
 
     async escalate(orgId, sessionId, reason, context) {
