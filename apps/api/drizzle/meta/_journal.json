@@ -8,6 +8,13 @@
       "when": 1775237233207,
       "tag": "0000_noisy_iron_monger",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1776926380759,
+      "tag": "0001_military_white_tiger",
+      "breakpoints": true
     }
   ]
 }
