@@ -25,6 +25,7 @@ export interface CandidateApplication {
   rejectReason: string | null;
   /** Free-text notes captured in the qualification drawer. */
   qualificationNotes: string | null;
+  matchScore: number | null;
   createdAt: Date;
   updatedAt: Date;
 }
