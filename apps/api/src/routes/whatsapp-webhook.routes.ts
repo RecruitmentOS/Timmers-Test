@@ -1,13 +1,14 @@
 // apps/api/src/routes/whatsapp-webhook.routes.ts
 import { Hono } from "hono";
 import { z } from "zod";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import type { AppEnv } from "../lib/app-env.js";
-import { db } from "../db/index.js";
+import { db, dbAdmin } from "../db/index.js";
 import {
   intakeSessions, intakeMessages, candidateApplications, candidates,
+  niloSessions,
 } from "../db/schema/index.js";
-import { getJobQueue } from "../lib/job-queue.js";
+import { getJobQueue, tryGetJobQueue } from "../lib/job-queue.js";
 import { createTwilioSandboxGateway } from "../modules/intake/whatsapp/twilio-sandbox.js";
 
 const twilioWebhookSchema = z.object({
@@ -40,6 +41,39 @@ export const whatsAppWebhookRoutes = new Hono<AppEnv>().post("/twilio", async (c
   }
 
   const parsed = gw.parseWebhook(params);
+
+  // Cross-tenant lookup: which nilo session is active for this phone?
+  // Uses dbAdmin to bypass RLS since orgId is unknown at this point.
+  const niloPhone = parsed.fromPhone
+  const niloRow = await dbAdmin
+    .select({
+      sessionId: niloSessions.id,
+      organizationId: niloSessions.organizationId,
+    })
+    .from(niloSessions)
+    .where(
+      and(
+        eq(niloSessions.contactPhone, niloPhone),
+        inArray(niloSessions.state, ['initiated', 'in_progress']),
+      ),
+    )
+    .limit(1)
+    .then((rows) => rows[0] ?? null)
+
+  if (niloRow) {
+    const boss = tryGetJobQueue()
+    if (boss) {
+      await boss.send('nilo.process_inbound', {
+        orgId: niloRow.organizationId,
+        sessionId: niloRow.sessionId,
+        fromPhone: parsed.fromPhone,
+        body: parsed.body,
+        twilioSid: parsed.messageSid,
+      })
+    }
+    return c.text('', 200)
+  }
+  // Fall through to intake session lookup
 
   // Resolve session by inbound phone (try awaiting_first_reply first, then in_progress)
   let sessionRow;
