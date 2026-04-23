@@ -53,6 +53,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { MatchScoreBadge } from "@/components/intake/match-score-badge";
+import { CommentThread } from "@/components/comments/comment-thread";
 
 const QUAL_COLORS: Record<string, string> = {
   pending: "bg-slate-100 text-slate-700",
@@ -97,7 +98,7 @@ const DOCUMENT_TYPE_ICONS: Record<string, string> = {
   id: "🪪",
 };
 
-const TABS = ["Overzicht", "Sollicitaties", "Documenten", "Journey"] as const;
+const TABS = ["Overzicht", "Sollicitaties", "Notities", "Documenten", "Journey"] as const;
 type Tab = (typeof TABS)[number];
 
 export default function CandidateDetailPage() {
@@ -472,6 +473,18 @@ export default function CandidateDetailPage() {
                     ))}
                   </div>
                 )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Notities tab */}
+          {activeTab === "Notities" && (
+            <Card className="border-0 shadow-md bg-gradient-to-br from-card to-card/70 backdrop-blur-sm ring-1 ring-border/60">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-base">Interne notities</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <CommentThread targetType="candidate" targetId={id} />
               </CardContent>
             </Card>
           )}
