@@ -13,6 +13,7 @@ export async function startSession(
 ): Promise<void> {
   const session = await persistence.getSession(orgId, sessionId)
   if (!session) throw new Error(`session not found: ${sessionId}`)
+  if (session.state !== 'created') return
 
   const template = flow.templates['first_contact']
   if (!template) throw new Error(`template first_contact missing in flow ${flow.id}`)
@@ -40,6 +41,7 @@ export async function sendReminder(
 ): Promise<void> {
   const session = await persistence.getSession(orgId, sessionId)
   if (!session) return
+  // strict > is intentional: a reply must postdate session creation by at least 1ms
   if (session.lastInboundAt && session.lastInboundAt > session.createdAt) return
   if (session.state === 'completed' || session.state === 'awaiting_human') return
 
@@ -69,6 +71,7 @@ export async function sendFarewell(
 ): Promise<void> {
   const session = await persistence.getSession(orgId, sessionId)
   if (!session) return
+  // strict > is intentional: a reply must postdate session creation by at least 1ms
   if (session.lastInboundAt && session.lastInboundAt > session.createdAt) return
   if (session.state === 'completed' || session.state === 'awaiting_human') return
 
