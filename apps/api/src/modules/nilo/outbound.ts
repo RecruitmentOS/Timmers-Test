@@ -1,5 +1,5 @@
-import { db } from '../../db/index.js'
 import { niloWebhookLogs } from '../../db/schema/index.js'
+import { withTenantContext } from '../../lib/with-tenant-context.js'
 import { createHmac } from 'node:crypto'
 import type { NiloFlow, NiloPersistence } from '@hey-nilo/core'
 
@@ -71,14 +71,16 @@ async function fireWebhook(
       })
       responseStatus = res.status
       if (res.ok) {
-        await db.insert(niloWebhookLogs).values({
-          organizationId: orgId,
-          sessionId,
-          targetUrl,
-          payload,
-          responseStatus,
-          attempt,
-          deliveredAt: new Date(),
+        await withTenantContext(orgId, async (tx) => {
+          await tx.insert(niloWebhookLogs).values({
+            organizationId: orgId,
+            sessionId,
+            targetUrl,
+            payload,
+            responseStatus,
+            attempt,
+            deliveredAt: new Date(),
+          })
         })
         return
       }
@@ -89,14 +91,16 @@ async function fireWebhook(
     await new Promise((r) => setTimeout(r, attempt * 1000))
   }
 
-  await db.insert(niloWebhookLogs).values({
-    organizationId: orgId,
-    sessionId,
-    targetUrl,
-    payload,
-    responseStatus,
-    attempt,
-    error: lastError,
+  await withTenantContext(orgId, async (tx) => {
+    await tx.insert(niloWebhookLogs).values({
+      organizationId: orgId,
+      sessionId,
+      targetUrl,
+      payload,
+      responseStatus,
+      attempt,
+      error: lastError,
+    })
   })
 }
 

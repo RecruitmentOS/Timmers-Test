@@ -42,6 +42,8 @@ const FLOW_MAP: Record<string, NiloFlow> = {}
 
 if (TIMMERS_FLOW.orgId) {
   FLOW_MAP[TIMMERS_FLOW.orgId] = TIMMERS_FLOW
+} else {
+  console.warn('[nilo] TIMMERS_ORG_ID not set — no flows registered; all nilo jobs will throw')
 }
 
 export function resolveFlow(orgId: string): NiloFlow | null {
