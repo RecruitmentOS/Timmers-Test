@@ -1,5 +1,5 @@
 {
-  "buildCommand": "cd ../.. && pnpm install --frozen-lockfile && pnpm turbo build --filter=@recruitment-os/web",
-  "outputDirectory": ".next",
-  "installCommand": "echo 'install handled by buildCommand'"
+  "installCommand": "cd ../.. && pnpm install --frozen-lockfile",
+  "buildCommand": "cd ../.. && pnpm turbo build --filter=@recruitment-os/web",
+  "outputDirectory": ".next"
 }
