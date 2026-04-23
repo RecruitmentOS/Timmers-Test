@@ -1,8 +1,16 @@
 // apps/api/src/modules/intake/agent/tool-store.ts
 import { eq, sql } from "drizzle-orm";
 import { db } from "../../../db/index.js";
-import { intakeSessions, candidateApplications, pipelineStages } from "../../../db/schema/index.js";
+import {
+  intakeSessions,
+  candidateApplications,
+  pipelineStages,
+  vacancies,
+} from "../../../db/schema/index.js";
 import { getJobQueue } from "../../../lib/job-queue.js";
+import { sendAlert } from "../../../lib/alert.js";
+import { qualificationCriteriaSchema } from "@recruitment-os/types";
+import { calculateMatchScore } from "../scorer.js";
 import type { ToolStore } from "./tool-executor.js";
 
 export function createToolStore(): ToolStore {
@@ -39,7 +47,44 @@ export function createToolStore(): ToolStore {
         .where(eq(intakeSessions.id, sessionId));
     },
     async finalize(sessionId, status, summary, rejectionReason) {
-      // Update session
+      // 1. Fetch session with answers + applicationId
+      const [session] = await db
+        .select({
+          applicationId: intakeSessions.applicationId,
+          orgId: intakeSessions.organizationId,
+          mustHaveAnswers: intakeSessions.mustHaveAnswers,
+        })
+        .from(intakeSessions)
+        .where(eq(intakeSessions.id, sessionId))
+        .limit(1);
+
+      if (!session) return;
+
+      // 2. Fetch vacancy criteria via candidateApplications JOIN
+      const [appRow] = await db
+        .select({
+          vacancyTitle: vacancies.title,
+          vacancyCriteria: vacancies.qualificationCriteria,
+        })
+        .from(candidateApplications)
+        .innerJoin(vacancies, eq(candidateApplications.vacancyId, vacancies.id))
+        .where(eq(candidateApplications.id, session.applicationId))
+        .limit(1);
+
+      // 3. Calculate match score
+      let matchScore: number | null = null;
+      if (appRow) {
+        const parsed = qualificationCriteriaSchema.safeParse(appRow.vacancyCriteria ?? {});
+        if (parsed.success) {
+          const allAnswers = (session.mustHaveAnswers ?? {}) as Record<
+            string,
+            { value: unknown; confidence: string }
+          >;
+          matchScore = calculateMatchScore(status, allAnswers, parsed.data);
+        }
+      }
+
+      // 4. Update intake_sessions with score
       await db
         .update(intakeSessions)
         .set({
@@ -47,33 +92,36 @@ export function createToolStore(): ToolStore {
           verdict: status,
           verdictReason: summary + (rejectionReason ? ` — ${rejectionReason}` : ""),
           completedAt: new Date(),
+          matchScore,
         })
         .where(eq(intakeSessions.id, sessionId));
 
-      // Move application stage
+      // 5. Move application stage + persist matchScore
       const targetSlug = status === "qualified" ? "qualified" : "rejected_by_bot";
-      const [session] = await db
-        .select({ applicationId: intakeSessions.applicationId, orgId: intakeSessions.organizationId })
-        .from(intakeSessions)
-        .where(eq(intakeSessions.id, sessionId))
+      const [stage] = await db
+        .select({ id: pipelineStages.id })
+        .from(pipelineStages)
+        .where(
+          sql`${pipelineStages.organizationId} = ${session.orgId} AND ${pipelineStages.slug} = ${targetSlug}`,
+        )
         .limit(1);
-      if (session) {
-        const [stage] = await db
-          .select({ id: pipelineStages.id })
-          .from(pipelineStages)
-          .where(
-            sql`${pipelineStages.organizationId} = ${session.orgId} AND ${pipelineStages.slug} = ${targetSlug}`,
-          )
-          .limit(1);
-        if (stage) {
-          await db
-            .update(candidateApplications)
-            .set({ currentStageId: stage.id })
-            .where(eq(candidateApplications.id, session.applicationId));
-        }
+
+      await db
+        .update(candidateApplications)
+        .set({
+          ...(stage ? { currentStageId: stage.id } : {}),
+          ...(matchScore !== null ? { matchScore } : {}),
+        })
+        .where(eq(candidateApplications.id, session.applicationId));
+
+      // 6. Alert on strong match (non-blocking)
+      if (matchScore !== null && matchScore >= 75 && status === "qualified" && appRow) {
+        void sendAlert(
+          `✅ Sterke kandidaat: ${matchScore}% match op "${appRow.vacancyTitle}" — controleer Intake Inbox`,
+        );
       }
 
-      // Enqueue Fleks pushback
+      // 7. Enqueue Fleks pushback
       await getJobQueue().send("intake.fleks_pushback", { sessionId });
     },
   };
