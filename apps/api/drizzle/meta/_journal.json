@@ -22,6 +22,20 @@
       "when": 1776929831153,
       "tag": "0002_cute_thor",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1776942523705,
+      "tag": "0003_light_the_enforcers",
+      "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1776942729481,
+      "tag": "0004_demonic_ultimatum",
+      "breakpoints": true
     }
   ]
 }

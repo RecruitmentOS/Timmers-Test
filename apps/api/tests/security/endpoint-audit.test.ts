@@ -462,7 +462,7 @@ describe("Security Audit: Secret Exposure", () => {
 // ===========================================================================
 
 describe("Security Audit: Route File Completeness", () => {
-  it("all 37 route files exist", () => {
+  it("all 39 route files exist", () => {
     const expectedFiles = [
       "activity.routes.ts",
       "admin.routes.ts",
@@ -488,6 +488,8 @@ describe("Security Audit: Route File Completeness", () => {
       "interview.routes.ts",
       "linkedin.routes.ts",
       "meta.routes.ts",
+      "nilo-sessions.routes.ts",
+      "nilo-trigger.routes.ts",
       "notification.routes.ts",
       "onboarding.routes.ts",
       "persona-template.routes.ts",

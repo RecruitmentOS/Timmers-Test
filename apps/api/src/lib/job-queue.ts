@@ -64,6 +64,12 @@ export async function startJobQueue(): Promise<PgBoss | null> {
     "nightly-backup",
     // task scheduler
     "task.overdue_reminder",
+    // nilo
+    "nilo.start",
+    "nilo.reminder_24h",
+    "nilo.reminder_72h",
+    "nilo.no_response_farewell",
+    "nilo.process_inbound",
   ];
   for (const q of KNOWN_QUEUES) {
     try {
@@ -84,6 +90,11 @@ export function getJobQueue(): PgBoss {
   if (!boss) {
     throw new Error("Job queue not started — call startJobQueue() first");
   }
+  return boss;
+}
+
+/** Returns the job queue instance if started, or null if JOBS_ENABLED=false. */
+export function tryGetJobQueue(): PgBoss | null {
   return boss;
 }
 

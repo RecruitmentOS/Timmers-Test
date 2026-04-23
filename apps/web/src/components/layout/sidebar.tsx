@@ -24,6 +24,7 @@ import {
   CalendarDays,
   Sparkles,
   Building2,
+  Bot,
 } from "lucide-react";
 import { signOut } from "@/lib/auth-client";
 import {
@@ -63,6 +64,7 @@ const EMPLOYER_NAV: NavItem[] = [
   { label: "Vacatures", href: "/vacancies", icon: Briefcase, tourId: "tour-vacatures" },
   { label: "Kandidaten", href: "/candidates", icon: Users, tourId: "tour-kandidaten", badge: "applications" },
   { label: "Intake Inbox", href: "/intake", icon: MessageSquareReply },
+  { label: "Hey Nilo", href: "/nilo/sessions", icon: Bot },
   { label: "Taken", href: "/tasks", icon: ListChecks, badge: "tasks" },
   { label: "Campagnes", href: "/campaigns", icon: Megaphone },
   { label: "Rapportages", href: "/reports", icon: BarChart3 },
@@ -73,6 +75,7 @@ const AGENCY_NAV: NavItem[] = [
   { label: "Vacatures", href: "/vacancies", icon: Briefcase, tourId: "tour-vacatures" },
   { label: "Kandidaten", href: "/candidates", icon: Users, tourId: "tour-kandidaten", badge: "applications" },
   { label: "Intake Inbox", href: "/intake", icon: MessageSquareReply },
+  { label: "Hey Nilo", href: "/nilo/sessions", icon: Bot },
   { label: "Taken", href: "/tasks", icon: ListChecks, badge: "tasks" },
   { label: "Klanten", href: "/clients", icon: Building2 },
   { label: "Campagnes", href: "/campaigns", icon: Megaphone },
