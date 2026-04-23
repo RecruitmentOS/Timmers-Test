@@ -6,19 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { AlertCircle } from "lucide-react";
 
-/**
- * WidgetShell
- *
- * Shared presentation for every dashboard widget. Each widget decides
- * its own data source (its own useQuery hook) and renders its own body;
- * the shell handles: title, optional icon, loading skeleton, error card
- * with retry, and height consistency so the grid stays aligned.
- *
- * Height rule: the shell enforces a minimum content height so that a
- * single late-loading widget does not cause layout shift on the whole
- * dashboard grid.
- */
-
 type Props = {
   title: string;
   icon?: ReactNode;
@@ -37,12 +24,16 @@ export function WidgetShell({
   children,
 }: Props) {
   return (
-    <Card className="h-full">
+    <Card className="h-full border-0 shadow-md bg-gradient-to-br from-card to-card/70 backdrop-blur-sm ring-1 ring-border/60 dark:ring-border/40 transition-shadow hover:shadow-lg">
       <CardHeader className="flex flex-row items-center justify-between pb-2">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
-        {icon && <div className="text-muted-foreground">{icon}</div>}
+        {icon && (
+          <div className="flex h-7 w-7 items-center justify-center rounded-md bg-primary/8 text-primary">
+            {icon}
+          </div>
+        )}
       </CardHeader>
       <CardContent className="min-h-[92px]">
         {isLoading ? (
