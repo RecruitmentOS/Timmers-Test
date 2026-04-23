@@ -52,6 +52,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { MatchScoreBadge } from "@/components/intake/match-score-badge";
 
 const QUAL_COLORS: Record<string, string> = {
   pending: "bg-slate-100 text-slate-700",
@@ -449,6 +450,7 @@ export default function CandidateDetailPage() {
                                   {app.currentStageName}
                                 </span>
                               )}
+                              <MatchScoreBadge score={app.matchScore} size="sm" />
                             </div>
                           </div>
                           <span className="text-xs text-muted-foreground shrink-0">

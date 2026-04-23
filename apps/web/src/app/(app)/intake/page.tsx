@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useIntakeSessions } from "@/hooks/use-intake";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { MatchScoreBadge } from "@/components/intake/match-score-badge";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -35,6 +36,7 @@ export default function IntakeInboxPage() {
                   <TableRow>
                     <TableHead>Kandidaat</TableHead>
                     <TableHead>Vacature</TableHead>
+                    <TableHead>Score</TableHead>
                     <TableHead>Verdict</TableHead>
                     <TableHead>Laatste activiteit</TableHead>
                   </TableRow>
@@ -48,6 +50,9 @@ export default function IntakeInboxPage() {
                         </Link>
                       </TableCell>
                       <TableCell>{s.vacancyTitle}</TableCell>
+                      <TableCell>
+                        <MatchScoreBadge score={(s as any).matchScore} size="sm" />
+                      </TableCell>
                       <TableCell>{s.verdict ? <Badge>{s.verdict}</Badge> : "–"}</TableCell>
                       <TableCell className="text-muted-foreground">
                         {s.lastInboundAt ? formatDistanceToNow(new Date(s.lastInboundAt), { addSuffix: true }) : "–"}
@@ -55,7 +60,7 @@ export default function IntakeInboxPage() {
                     </TableRow>
                   ))}
                   {data.sessions.length === 0 && (
-                    <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">Geen sessies</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">Geen sessies</TableCell></TableRow>
                   )}
                 </TableBody>
               </Table>
