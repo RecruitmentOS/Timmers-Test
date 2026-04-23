@@ -33,9 +33,15 @@ export async function processInbound(
 
   const texts: string[] = []
   const toolCalls: NiloToolCall[] = []
+  const validToolNames = new Set(NILO_TOOLS.map((t) => t.name))
+
   for (const block of response.content) {
     if (block.type === 'text') texts.push(block.text)
     if (block.type === 'tool_use') {
+      if (!validToolNames.has(block.name)) {
+        console.warn(`[nilo-agent] unknown tool from Claude: ${block.name} — skipping`)
+        continue
+      }
       toolCalls.push({ name: block.name as NiloToolName, input: block.input as Record<string, unknown> })
     }
   }
@@ -46,9 +52,13 @@ export async function processInbound(
   }
 
   const text = texts.join('\n').trim()
+  let messageSid = ''
   if (text) {
     const send = await deps.sendWhatsApp({ toPhone: ctx.contactPhone, body: text })
-    await deps.persistence.persistOutbound(ctx.orgId, ctx.sessionId, text, send.messageSid, toolCalls)
+    messageSid = send.messageSid
+  }
+  if (text || toolCalls.length > 0) {
+    await deps.persistence.persistOutbound(ctx.orgId, ctx.sessionId, text, messageSid, toolCalls)
   }
 
   await deps.persistence.setInProgress(ctx.orgId, ctx.sessionId)

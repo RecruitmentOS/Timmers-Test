@@ -60,4 +60,45 @@ describe('processInbound', () => {
     )
     expect(store.setInProgress).toHaveBeenCalledWith('org1', 'sess1')
   })
+
+  it('persists tool calls even when Claude sends no text', async () => {
+    const toolOnlyClaude = {
+      messages: {
+        create: vi.fn().mockResolvedValue({
+          content: [
+            {
+              type: 'tool_use',
+              id: 'tu1',
+              name: 'finalize_verdict',
+              input: { status: 'qualified', summary: 'Alles ok' },
+            },
+          ],
+        }),
+      },
+    }
+    const store = makeStore()
+    const sendWhatsApp = vi.fn()
+
+    await processInbound(
+      {
+        orgId: 'org1',
+        sessionId: 'sess1',
+        tenantName: 'Timmers',
+        vacancyTitle: 'Chauffeur CE',
+        criteria: baseCriteria,
+        answeredMustHaves: {},
+        answeredNiceToHaves: {},
+        stuckCounter: {},
+        recentMessages: [{ direction: 'inbound', body: 'Ja' }],
+        contactPhone: '+31612345678',
+      },
+      { claude: toolOnlyClaude as any, sendWhatsApp, persistence: store },
+    )
+
+    expect(sendWhatsApp).not.toHaveBeenCalled()
+    expect(store.persistOutbound).toHaveBeenCalledWith(
+      'org1', 'sess1', '', '', [{ name: 'finalize_verdict', input: { status: 'qualified', summary: 'Alles ok' } }],
+    )
+    expect(store.setInProgress).toHaveBeenCalledWith('org1', 'sess1')
+  })
 })
