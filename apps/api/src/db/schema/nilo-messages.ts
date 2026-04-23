@@ -1,4 +1,5 @@
-import { pgTable, uuid, varchar, text, boolean, timestamp, jsonb } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, varchar, text, boolean, timestamp, jsonb, check, index } from 'drizzle-orm/pg-core'
+import { sql } from 'drizzle-orm'
 import { tenantRlsPolicies } from './rls-helpers.js'
 import { niloSessions } from './nilo-sessions.js'
 
@@ -15,5 +16,9 @@ export const niloMessages = pgTable(
     toolCalls: jsonb('tool_calls'),
     sentAt: timestamp('sent_at').notNull().defaultNow(),
   },
-  () => tenantRlsPolicies('nilo_messages'),
+  (t) => [
+    check('nilo_messages_direction_check', sql`${t.direction} IN ('inbound', 'outbound')`),
+    index('nilo_messages_session_id_idx').on(t.sessionId),
+    ...tenantRlsPolicies('nilo_messages'),
+  ],
 ).enableRLS()

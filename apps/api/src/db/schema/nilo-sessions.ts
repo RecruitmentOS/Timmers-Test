@@ -1,5 +1,5 @@
 import {
-  pgTable, uuid, text, varchar, timestamp, integer, jsonb,
+  pgTable, uuid, text, varchar, timestamp, integer, jsonb, index,
 } from 'drizzle-orm/pg-core'
 import { tenantRlsPolicies } from './rls-helpers.js'
 import { candidateApplications } from './applications.js'
@@ -30,5 +30,9 @@ export const niloSessions = pgTable(
     lastInboundAt: timestamp('last_inbound_at'),
     lastOutboundAt: timestamp('last_outbound_at'),
   },
-  () => tenantRlsPolicies('nilo_sessions'),
+  (t) => [
+    index('nilo_sessions_contact_phone_idx').on(t.contactPhone),
+    index('nilo_sessions_org_state_idx').on(t.organizationId, t.state),
+    ...tenantRlsPolicies('nilo_sessions'),
+  ],
 ).enableRLS()

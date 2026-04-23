@@ -1,4 +1,4 @@
-import { pgTable, uuid, text, integer, timestamp, jsonb } from 'drizzle-orm/pg-core'
+import { pgTable, uuid, text, integer, timestamp, jsonb, index } from 'drizzle-orm/pg-core'
 import { tenantRlsPolicies } from './rls-helpers.js'
 import { niloSessions } from './nilo-sessions.js'
 
@@ -16,5 +16,8 @@ export const niloWebhookLogs = pgTable(
     deliveredAt: timestamp('delivered_at'),
     createdAt: timestamp('created_at').notNull().defaultNow(),
   },
-  () => tenantRlsPolicies('nilo_webhook_logs'),
+  (t) => [
+    index('nilo_webhook_logs_session_id_idx').on(t.sessionId),
+    ...tenantRlsPolicies('nilo_webhook_logs'),
+  ],
 ).enableRLS()

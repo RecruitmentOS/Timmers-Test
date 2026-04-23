@@ -7,6 +7,7 @@ export const niloTriggerEvents = pgTable(
   {
     id: uuid('id').primaryKey().defaultRandom(),
     organizationId: uuid('organization_id').notNull(),
+    // NULL means no idempotency key — multiple NULL rows are intentionally allowed by PostgreSQL unique constraint semantics
     externalRef: text('external_ref'),
     payload: jsonb('payload').notNull(),
     sessionId: uuid('session_id').references(() => niloSessions.id),
