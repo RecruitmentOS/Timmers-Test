@@ -6,6 +6,7 @@ import {
   numeric,
   timestamp,
   boolean,
+  integer,
   pgEnum,
 } from "drizzle-orm/pg-core";
 import { tenantRlsPolicies } from "./rls-helpers.js";
@@ -61,6 +62,7 @@ export const candidateApplications = pgTable(
       .notNull()
       .default(false),
     rejectReason: text("reject_reason"),
+    matchScore: integer("match_score"),          // mirrored from intake_sessions.match_score
     qualificationNotes: text("qualification_notes"),
     utmSource: varchar("utm_source", { length: 255 }),
     utmMedium: varchar("utm_medium", { length: 255 }),

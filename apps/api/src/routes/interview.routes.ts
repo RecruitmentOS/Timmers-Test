@@ -116,4 +116,65 @@ export const interviewRoutes = new Hono<AppEnv>()
         return errorResponse(c, e as Error);
       }
     }
+  )
+
+  /**
+   * POST /:id/scorecard — Create or update a scorecard for an interview
+   */
+  .post(
+    "/:id/scorecard",
+    requirePermission("interview", "update"),
+    zValidator(
+      "json",
+      z.object({
+        criteria: z
+          .array(
+            z.object({
+              label: z.string().min(1),
+              rating: z.number().int().min(1).max(5),
+              notes: z.string(),
+            })
+          )
+          .min(1),
+        overallRating: z.number().int().min(1).max(5),
+        recommendation: z.enum(["proceed", "hold", "reject"]),
+        notes: z.string().optional(),
+      })
+    ),
+    async (c) => {
+      try {
+        const orgId = c.get("organizationId");
+        const user = c.get("user")!;
+        const interviewId = c.req.param("id");
+        const input = c.req.valid("json");
+        const result = await interviewService.createScorecard(
+          orgId,
+          interviewId,
+          input,
+          user.id
+        );
+        return c.json(result, 201);
+      } catch (e) {
+        return errorResponse(c, e as Error);
+      }
+    }
+  )
+
+  /**
+   * GET /:id/scorecard — Get the scorecard for an interview
+   */
+  .get(
+    "/:id/scorecard",
+    requirePermission("interview", "read"),
+    async (c) => {
+      try {
+        const orgId = c.get("organizationId");
+        const interviewId = c.req.param("id");
+        const result = await interviewService.getScorecard(orgId, interviewId);
+        if (!result) return c.json({ scorecard: null });
+        return c.json({ scorecard: result });
+      } catch (e) {
+        return errorResponse(c, e as Error);
+      }
+    }
   );

@@ -5,6 +5,7 @@ import {
   text,
   integer,
   timestamp,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { tenantRlsPolicies } from "./rls-helpers.js";
 import { candidateApplications } from "./applications.js";
@@ -47,4 +48,33 @@ export const interviews = pgTable(
     updatedAt: timestamp("updated_at").defaultNow().notNull(),
   },
   () => tenantRlsPolicies("interviews")
+).enableRLS();
+
+/**
+ * Interview scorecards — structured evaluation form submitted after an interview.
+ * One scorecard per interview (unique constraint on interviewId).
+ */
+export const interviewScorecards = pgTable(
+  "interview_scorecards",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    organizationId: uuid("organization_id").notNull(),
+    interviewId: uuid("interview_id")
+      .notNull()
+      .unique()
+      .references(() => interviews.id, { onDelete: "cascade" }),
+    interviewerId: text("interviewer_id")
+      .notNull()
+      .references(() => user.id),
+    criteria: jsonb("criteria")
+      .$type<Array<{ label: string; rating: number; notes: string }>>()
+      .notNull()
+      .default([]),
+    overallRating: integer("overall_rating").notNull(),
+    recommendation: varchar("recommendation", { length: 20 }).notNull(),
+    notes: text("notes"),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+    updatedAt: timestamp("updated_at"),
+  },
+  () => tenantRlsPolicies("interview_scorecards")
 ).enableRLS();

@@ -9,7 +9,9 @@ import {
   useVacancyNotes,
   useAddVacancyNote,
   useVacancyAssignments,
+  useUpdateVacancy,
 } from "@/hooks/use-vacancies";
+import { cn } from "@/lib/utils";
 import { useCreateApplication } from "@/hooks/use-applications";
 import { useCandidates } from "@/hooks/use-candidates";
 import type { Vacancy } from "@recruitment-os/types";
@@ -51,6 +53,13 @@ import { MapPin, Calendar, UserPlus, MessageSquare } from "lucide-react";
 import { PipelineBoard } from "@/components/pipeline/pipeline-board";
 import VacancyCampaignsPage from "./campaigns/page";
 
+const DISTRIBUTION_CHANNELS = [
+  { key: "indeed", label: "Indeed", description: "Grootste Nederlandse jobboard" },
+  { key: "marktplaats", label: "Marktplaats", description: "Bereik blue-collar doelgroep" },
+  { key: "google_for_jobs", label: "Google for Jobs", description: "Gratis via gestructureerde data" },
+  { key: "linkedin", label: "LinkedIn", description: "Professioneel netwerk" },
+] as const;
+
 const STATUS_COLORS: Record<string, string> = {
   draft: "bg-gray-100 text-gray-800",
   active: "bg-green-100 text-green-800",
@@ -68,6 +77,8 @@ export default function VacancyDetailPage() {
   const createApplicationMutation = useCreateApplication();
   const { data: allCandidates } = useCandidates();
 
+  const updateMutation = useUpdateVacancy(id);
+
   const [noteContent, setNoteContent] = useState("");
   const [selectedCandidateId, setSelectedCandidateId] = useState("");
   const [linkDialogOpen, setLinkDialogOpen] = useState(false);
@@ -83,6 +94,13 @@ export default function VacancyDetailPage() {
 
   if (!vacancy) {
     return <p className="text-muted-foreground">Vacancy not found.</p>;
+  }
+
+  async function handleDistributionToggle(channel: string, enabled: boolean) {
+    const current = (vacancy?.distributionChannels as Record<string, boolean>) ?? {};
+    await updateMutation.mutateAsync({
+      distributionChannels: { ...current, [channel]: enabled },
+    });
   }
 
   const handleAddNote = async () => {
@@ -236,6 +254,7 @@ export default function VacancyDetailPage() {
               <TooltipContent>Coming in Phase 2</TooltipContent>
             </Tooltip>
             <TabsTrigger value="campaigns">Campagnes</TabsTrigger>
+            <TabsTrigger value="distributie">Distributie</TabsTrigger>
             <Tooltip>
               <TooltipTrigger render={<span />}>
                 <TabsTrigger value="client-view" disabled>
@@ -345,6 +364,49 @@ export default function VacancyDetailPage() {
 
           <TabsContent value="campaigns" className="mt-4">
             <VacancyCampaignsPage />
+          </TabsContent>
+
+          <TabsContent value="distributie" className="mt-4">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">Distributiekanalen</CardTitle>
+                <p className="text-sm text-muted-foreground">
+                  Beheer op welke kanalen deze vacature wordt gepubliceerd.
+                </p>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {DISTRIBUTION_CHANNELS.map((channel) => {
+                  const isEnabled = !!(vacancy?.distributionChannels as Record<string, boolean>)?.[channel.key];
+                  return (
+                    <div key={channel.key} className="flex items-center justify-between py-2 border-b border-border/50 last:border-0">
+                      <div>
+                        <p className="text-sm font-medium">{channel.label}</p>
+                        <p className="text-xs text-muted-foreground">{channel.description}</p>
+                      </div>
+                      <button
+                        type="button"
+                        role="switch"
+                        aria-checked={isEnabled}
+                        onClick={() => handleDistributionToggle(channel.key, !isEnabled)}
+                        disabled={updateMutation.isPending}
+                        className={cn(
+                          "relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors focus-visible:outline-none",
+                          isEnabled ? "bg-indigo-600" : "bg-input",
+                          updateMutation.isPending && "opacity-50 cursor-not-allowed"
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-lg ring-0 transition-transform",
+                            isEnabled ? "translate-x-5" : "translate-x-0"
+                          )}
+                        />
+                      </button>
+                    </div>
+                  );
+                })}
+              </CardContent>
+            </Card>
           </TabsContent>
 
           <TabsContent value="pipeline" className="mt-4">

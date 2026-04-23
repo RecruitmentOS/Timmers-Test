@@ -3,6 +3,7 @@
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar, type SidebarVariant } from "./sidebar";
 import { AppHeader } from "./app-header";
+import { QuickAddFAB } from "./quick-add-fab";
 
 export default function AppShell({
   variant,
@@ -20,6 +21,7 @@ export default function AppShell({
           <div className="p-6">{children}</div>
         </main>
       </div>
+      <QuickAddFAB />
     </SidebarProvider>
   );
 }

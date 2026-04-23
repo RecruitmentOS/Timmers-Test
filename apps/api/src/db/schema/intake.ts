@@ -21,6 +21,7 @@ export const intakeSessions = pgTable(
     lastInboundAt: timestamp("last_inbound_at"),
     lastOutboundAt: timestamp("last_outbound_at"),
     reminderCount: integer("reminder_count").default(0).notNull(),
+    matchScore: integer("match_score"),          // 0–100, null until session is completed
     createdAt: timestamp("created_at").defaultNow().notNull(),
     completedAt: timestamp("completed_at"),
   },

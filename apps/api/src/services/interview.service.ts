@@ -1,10 +1,16 @@
 import { eq, and } from "drizzle-orm";
 import { withTenantContext } from "../lib/with-tenant-context.js";
-import { interviews } from "../db/schema/interviews.js";
+import { interviews, interviewScorecards } from "../db/schema/interviews.js";
 import { calendarService } from "./calendar.service.js";
 import { taskService } from "./task.service.js";
 import { emailService } from "./email.service.js";
-import type { CreateInterviewInput } from "@recruitment-os/types";
+import type {
+  CreateInterviewInput,
+  CreateScorecardInput,
+  InterviewScorecard,
+  ScorecardCriterion,
+  ScorecardRecommendation,
+} from "@recruitment-os/types";
 
 // ============================================================
 // Interview service — scheduling with calendar event + task creation
@@ -192,6 +198,83 @@ export const interviewService = {
         .where(eq(interviews.id, interviewId))
         .returning();
       return row ?? null;
+    });
+  },
+
+  /**
+   * Create or update a scorecard for an interview.
+   * Uses upsert so a recruiter can re-submit/update their scorecard.
+   */
+  async createScorecard(
+    orgId: string,
+    interviewId: string,
+    input: CreateScorecardInput,
+    interviewerId: string
+  ): Promise<InterviewScorecard> {
+    return withTenantContext(orgId, async (tx) => {
+      const [row] = await tx
+        .insert(interviewScorecards)
+        .values({
+          organizationId: orgId,
+          interviewId,
+          interviewerId,
+          criteria: input.criteria,
+          overallRating: input.overallRating,
+          recommendation: input.recommendation,
+          notes: input.notes ?? null,
+        })
+        .onConflictDoUpdate({
+          target: interviewScorecards.interviewId,
+          set: {
+            criteria: input.criteria,
+            overallRating: input.overallRating,
+            recommendation: input.recommendation,
+            notes: input.notes ?? null,
+            updatedAt: new Date(),
+          },
+        })
+        .returning();
+      return {
+        id: row.id,
+        organizationId: row.organizationId,
+        interviewId: row.interviewId,
+        interviewerId: row.interviewerId,
+        criteria: row.criteria as ScorecardCriterion[],
+        overallRating: row.overallRating,
+        recommendation: row.recommendation as ScorecardRecommendation,
+        notes: row.notes,
+        createdAt: row.createdAt.toISOString(),
+        updatedAt: row.updatedAt?.toISOString() ?? null,
+      };
+    });
+  },
+
+  /**
+   * Retrieve the scorecard for a given interview, or null if none exists.
+   */
+  async getScorecard(
+    orgId: string,
+    interviewId: string
+  ): Promise<InterviewScorecard | null> {
+    return withTenantContext(orgId, async (tx) => {
+      const [row] = await tx
+        .select()
+        .from(interviewScorecards)
+        .where(eq(interviewScorecards.interviewId, interviewId))
+        .limit(1);
+      if (!row) return null;
+      return {
+        id: row.id,
+        organizationId: row.organizationId,
+        interviewId: row.interviewId,
+        interviewerId: row.interviewerId,
+        criteria: row.criteria as ScorecardCriterion[],
+        overallRating: row.overallRating,
+        recommendation: row.recommendation as ScorecardRecommendation,
+        notes: row.notes,
+        createdAt: row.createdAt.toISOString(),
+        updatedAt: row.updatedAt?.toISOString() ?? null,
+      };
     });
   },
 };

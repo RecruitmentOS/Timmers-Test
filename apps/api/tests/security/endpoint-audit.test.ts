@@ -94,7 +94,7 @@ describe("Security Audit: Auth Bypass", () => {
     expect(publicRouteIdx).toBeLessThan(authMiddlewareIdx);
 
     // Auth handler for Better Auth must be before auth middleware
-    const authHandlerIdx = indexSource.indexOf('app.on(["POST", "GET"], "/api/auth/**"');
+    const authHandlerIdx = indexSource.indexOf('app.on(["POST", "GET"], "/api/auth/*"');
     expect(authHandlerIdx).toBeGreaterThan(-1);
     expect(authHandlerIdx).toBeLessThan(authMiddlewareIdx);
   });
@@ -462,7 +462,7 @@ describe("Security Audit: Secret Exposure", () => {
 // ===========================================================================
 
 describe("Security Audit: Route File Completeness", () => {
-  it("all 30 route files exist", () => {
+  it("all 37 route files exist", () => {
     const expectedFiles = [
       "activity.routes.ts",
       "admin.routes.ts",
@@ -480,7 +480,11 @@ describe("Security Audit: Route File Completeness", () => {
       "document.routes.ts",
       "driver-qualification.routes.ts",
       "file.routes.ts",
+      "gdpr.routes.ts",
       "geocoding.routes.ts",
+      "intake-metrics.routes.ts",
+      "intake-template.routes.ts",
+      "intake.routes.ts",
       "interview.routes.ts",
       "linkedin.routes.ts",
       "meta.routes.ts",
@@ -488,12 +492,15 @@ describe("Security Audit: Route File Completeness", () => {
       "onboarding.routes.ts",
       "persona-template.routes.ts",
       "pipeline.routes.ts",
+      "placement.routes.ts",
       "portal.routes.ts",
       "public.routes.ts",
       "report.routes.ts",
+      "room-timeline.routes.ts",
       "targeting-template.routes.ts",
       "task.routes.ts",
       "vacancy.routes.ts",
+      "whatsapp-webhook.routes.ts",
     ];
 
     const actualFiles = readdirSync(ROUTES_DIR);

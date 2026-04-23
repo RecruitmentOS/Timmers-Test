@@ -71,6 +71,7 @@ export const intakeRoutes = new Hono<AppEnv>()
             id: intakeSessions.id,
             state: intakeSessions.state,
             verdict: intakeSessions.verdict,
+            matchScore: intakeSessions.matchScore,
             createdAt: intakeSessions.createdAt,
             lastInboundAt: intakeSessions.lastInboundAt,
             lastOutboundAt: intakeSessions.lastOutboundAt,
