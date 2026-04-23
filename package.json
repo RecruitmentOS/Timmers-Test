@@ -3,7 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.20.0",
   "scripts": {
-    "dev": "turbo dev",
+    "dev": "ulimit -n 200000; turbo dev",
     "build": "turbo build",
     "type-check": "turbo type-check",
     "lint": "turbo lint"
