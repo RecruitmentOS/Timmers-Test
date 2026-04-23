@@ -41,3 +41,31 @@ export interface CreateInterviewInput {
   location?: string;
   notes?: string;
 }
+
+export interface ScorecardCriterion {
+  label: string;
+  rating: number;
+  notes: string;
+}
+
+export type ScorecardRecommendation = "proceed" | "hold" | "reject";
+
+export interface InterviewScorecard {
+  id: string;
+  organizationId: string;
+  interviewId: string;
+  interviewerId: string;
+  criteria: ScorecardCriterion[];
+  overallRating: number;
+  recommendation: ScorecardRecommendation;
+  notes: string | null;
+  createdAt: string;
+  updatedAt: string | null;
+}
+
+export interface CreateScorecardInput {
+  criteria: ScorecardCriterion[];
+  overallRating: number;
+  recommendation: ScorecardRecommendation;
+  notes?: string;
+}
