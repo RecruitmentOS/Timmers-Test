@@ -10,6 +10,7 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml package.json ./
 COPY apps/api/package.json apps/api/
 COPY packages/types/package.json packages/types/
 COPY packages/permissions/package.json packages/permissions/
+COPY packages/nilo-core/package.json packages/nilo-core/
 
 RUN pnpm install --frozen-lockfile --prod=false
 
@@ -18,9 +19,13 @@ FROM base AS builder
 WORKDIR /app
 
 COPY --from=deps /app .
-COPY apps/api/ apps/api/
-COPY packages/ packages/
 COPY tsconfig.base.json .
+COPY packages/ packages/
+COPY apps/api/ apps/api/
+
+# Build the 3 workspace packages first so their dist/ is available
+# for the api build and for the runner stage at runtime.
+RUN pnpm -r --filter "@hey-nilo/core" --filter "@recruitment-os/permissions" --filter "@recruitment-os/types" run build
 
 RUN cd apps/api && pnpm build
 
@@ -36,7 +41,17 @@ WORKDIR /app
 COPY --from=builder /app/apps/api/dist ./apps/api/dist
 COPY --from=deps /app/node_modules ./node_modules
 COPY --from=deps /app/apps/api/node_modules ./apps/api/node_modules
-COPY --from=deps /app/packages ./packages
+# Copy compiled workspace packages from builder (package.json + dist/) so
+# Node can resolve `@hey-nilo/core`, `@recruitment-os/permissions`, and
+# `@recruitment-os/types` via their `main`/`exports` entries at runtime.
+COPY --from=builder /app/packages/nilo-core/package.json ./packages/nilo-core/package.json
+COPY --from=builder /app/packages/nilo-core/dist ./packages/nilo-core/dist
+COPY --from=deps /app/packages/nilo-core/node_modules ./packages/nilo-core/node_modules
+COPY --from=builder /app/packages/permissions/package.json ./packages/permissions/package.json
+COPY --from=builder /app/packages/permissions/dist ./packages/permissions/dist
+COPY --from=builder /app/packages/types/package.json ./packages/types/package.json
+COPY --from=builder /app/packages/types/dist ./packages/types/dist
+COPY --from=deps /app/packages/types/node_modules ./packages/types/node_modules
 COPY apps/api/drizzle ./apps/api/drizzle
 COPY apps/api/src/db/setup-rls.sql ./apps/api/src/db/setup-rls.sql
 
